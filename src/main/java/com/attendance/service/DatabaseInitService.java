@@ -29,13 +29,13 @@ public class DatabaseInitService {
 
     public static boolean checkTablesExist() {
         String sql = "SELECT COUNT(*) FROM information_schema.tables " +
-                     "WHERE table_schema = ? AND table_name IN ('users', 'students', 'teachers', 'attendance', 'settings')";
+                     "WHERE table_schema = ? AND table_name IN ('users', 'students', 'teachers', 'attendance', 'settings', 'subjects', 'periods', 'timetable', 'leave_requests')";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, DatabaseConnection.getDbName());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) >= 5;
+                    return rs.getInt(1) >= 9;
                 }
             }
         } catch (SQLException e) {
@@ -59,7 +59,16 @@ public class DatabaseInitService {
 
             if (forceRecreate) {
                 stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 0");
+                stmt.executeUpdate("DROP TABLE IF EXISTS notifications");
+                stmt.executeUpdate("DROP TABLE IF EXISTS audit_logs");
+                stmt.executeUpdate("DROP TABLE IF EXISTS attendance_audit");
+                stmt.executeUpdate("DROP TABLE IF EXISTS leave_requests");
+                stmt.executeUpdate("DROP TABLE IF EXISTS attendance_session");
+                stmt.executeUpdate("DROP TABLE IF EXISTS timetable");
+                stmt.executeUpdate("DROP TABLE IF EXISTS periods");
+                stmt.executeUpdate("DROP TABLE IF EXISTS student_subjects");
                 stmt.executeUpdate("DROP TABLE IF EXISTS attendance");
+                stmt.executeUpdate("DROP TABLE IF EXISTS subjects");
                 stmt.executeUpdate("DROP TABLE IF EXISTS students");
                 stmt.executeUpdate("DROP TABLE IF EXISTS teachers");
                 stmt.executeUpdate("DROP TABLE IF EXISTS departments");
@@ -85,11 +94,13 @@ public class DatabaseInitService {
                     "username VARCHAR(50) NOT NULL UNIQUE, " +
                     "password_hash VARCHAR(255) NOT NULL, " +
                     "full_name VARCHAR(100) NOT NULL, " +
-                    "role ENUM('ADMIN', 'TEACHER') NOT NULL DEFAULT 'TEACHER', " +
+                    "role ENUM('ADMIN', 'TEACHER', 'STUDENT') NOT NULL DEFAULT 'TEACHER', " +
                     "email VARCHAR(100) NULL, " +
+                    "student_id INT NULL, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
-                    "INDEX idx_users_username (username)" +
+                    "INDEX idx_users_username (username), " +
+                    "INDEX idx_users_role (role)" +
                     ") ENGINE=InnoDB"
             );
 
@@ -143,23 +154,173 @@ public class DatabaseInitService {
                     ") ENGINE=InnoDB"
             );
 
+            // Create subjects
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS subjects (" +
+                    "subject_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "subject_code VARCHAR(20) NOT NULL UNIQUE, " +
+                    "subject_name VARCHAR(100) NOT NULL, " +
+                    "department VARCHAR(50) NOT NULL, " +
+                    "year_of_study INT NOT NULL, " +
+                    "semester VARCHAR(20) NOT NULL, " +
+                    "credits INT DEFAULT 3, " +
+                    "teacher_id INT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+                    "INDEX idx_subject_code (subject_code), " +
+                    "INDEX idx_subject_dept_year (department, year_of_study)" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create student_subjects
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS student_subjects (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "student_id INT NOT NULL, " +
+                    "subject_id INT NOT NULL, " +
+                    "enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "UNIQUE KEY uq_student_subject (student_id, subject_id), " +
+                    "INDEX idx_ss_student (student_id), " +
+                    "INDEX idx_ss_subject (subject_id)" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create periods
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS periods (" +
+                    "period_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "period_number INT NOT NULL UNIQUE, " +
+                    "period_name VARCHAR(50) NOT NULL, " +
+                    "start_time VARCHAR(20) NOT NULL, " +
+                    "end_time VARCHAR(20) NOT NULL, " +
+                    "is_active BOOLEAN DEFAULT TRUE" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create timetable
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS timetable (" +
+                    "timetable_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "day_of_week VARCHAR(20) NOT NULL, " +
+                    "period_id INT NOT NULL, " +
+                    "subject_id INT NOT NULL, " +
+                    "teacher_id INT NULL, " +
+                    "department VARCHAR(50) NOT NULL, " +
+                    "year_of_study INT NOT NULL, " +
+                    "section VARCHAR(10) NOT NULL, " +
+                    "room VARCHAR(50) DEFAULT 'Room 101', " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "UNIQUE KEY uq_timetable_slot (day_of_week, period_id, department, year_of_study, section)" +
+                    ") ENGINE=InnoDB"
+            );
+
             // Create attendance
             stmt.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS attendance (" +
                     "attendance_id INT AUTO_INCREMENT PRIMARY KEY, " +
                     "student_id INT NOT NULL, " +
+                    "subject_id INT NULL, " +
                     "attendance_date DATE NOT NULL, " +
+                    "period VARCHAR(20) DEFAULT 'Period 1', " +
                     "status ENUM('PRESENT', 'ABSENT') NOT NULL, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
-                    "UNIQUE KEY uq_student_date (student_id, attendance_date), " +
                     "INDEX idx_attendance_date (attendance_date), " +
-                    "INDEX idx_attendance_student (student_id), " +
-                    "CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE" +
+                    "INDEX idx_attendance_student (student_id)" +
                     ") ENGINE=InnoDB"
             );
 
-            LOGGER.info("Tables created or verified successfully.");
+            // Create attendance_session
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS attendance_session (" +
+                    "session_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "token VARCHAR(64) NOT NULL UNIQUE, " +
+                    "subject_id INT NOT NULL, " +
+                    "teacher_id INT NOT NULL, " +
+                    "attendance_date DATE NOT NULL, " +
+                    "period VARCHAR(20) NOT NULL, " +
+                    "department VARCHAR(50) NOT NULL, " +
+                    "year_of_study INT NOT NULL, " +
+                    "section VARCHAR(10) NOT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "expires_at TIMESTAMP NOT NULL, " +
+                    "status ENUM('ACTIVE', 'EXPIRED', 'CLOSED') DEFAULT 'ACTIVE'" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create leave_requests
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS leave_requests (" +
+                    "leave_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "student_id INT NOT NULL, " +
+                    "leave_type ENUM('Medical', 'Personal', 'College Event', 'Emergency', 'Other') NOT NULL, " +
+                    "from_date DATE NOT NULL, " +
+                    "to_date DATE NOT NULL, " +
+                    "reason TEXT NOT NULL, " +
+                    "supporting_doc VARCHAR(255) NULL, " +
+                    "status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING', " +
+                    "approved_by VARCHAR(100) NULL, " +
+                    "approved_at TIMESTAMP NULL, " +
+                    "remarks TEXT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create attendance_audit
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS attendance_audit (" +
+                    "audit_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "attendance_id INT NULL, " +
+                    "student_id INT NOT NULL, " +
+                    "old_status VARCHAR(20) NOT NULL, " +
+                    "new_status VARCHAR(20) NOT NULL, " +
+                    "changed_by VARCHAR(100) NOT NULL, " +
+                    "changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "reason TEXT NOT NULL" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create audit_logs
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS audit_logs (" +
+                    "log_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "user_id VARCHAR(50) NOT NULL, " +
+                    "action VARCHAR(50) NOT NULL, " +
+                    "description TEXT NOT NULL, " +
+                    "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "ip_address VARCHAR(50) DEFAULT '127.0.0.1'" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // Create notifications
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS notifications (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "title VARCHAR(100) NOT NULL, " +
+                    "message TEXT NOT NULL, " +
+                    "category VARCHAR(50) NOT NULL, " +
+                    "target_role VARCHAR(20) DEFAULT 'ALL', " +
+                    "is_read BOOLEAN DEFAULT FALSE, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ") ENGINE=InnoDB"
+            );
+
+            // If tables existed from v1, ensure new columns are added safely
+            try {
+                stmt.executeUpdate("ALTER TABLE users MODIFY COLUMN role ENUM('ADMIN', 'TEACHER', 'STUDENT') NOT NULL DEFAULT 'TEACHER'");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.executeUpdate("ALTER TABLE users ADD COLUMN student_id INT NULL");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.executeUpdate("ALTER TABLE attendance ADD COLUMN subject_id INT NULL");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.executeUpdate("ALTER TABLE attendance ADD COLUMN period VARCHAR(20) DEFAULT 'Period 1'");
+            } catch (SQLException ignored) {}
+
+            LOGGER.info("All 15 tables created or verified successfully.");
         }
 
         // Seed data if empty
@@ -171,15 +332,15 @@ public class DatabaseInitService {
             // 1. Seed Settings
             try (Statement s = conn.createStatement();
                  ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM settings")) {
-                if (rs.next() && rs.getInt(1) == 0) {
+                if (rs.next() && rs.getInt(1) < 12) {
                     insertSettings(conn);
                 }
             }
 
-            // 2. Seed Users (admin & teacher)
+            // 2. Seed Users (admin, teacher, student)
             try (Statement s = conn.createStatement();
                  ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM users")) {
-                if (rs.next() && rs.getInt(1) == 0) {
+                if (rs.next() && rs.getInt(1) < 3) {
                     insertUsers(conn);
                 }
             }
@@ -200,11 +361,59 @@ public class DatabaseInitService {
                 }
             }
 
-            // 5. Seed 100 Students and attendance
+            // 5. Seed Periods
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM periods")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertPeriods(conn);
+                }
+            }
+
+            // 6. Seed Subjects
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM subjects")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertSubjects(conn);
+                }
+            }
+
+            // 7. Seed 100 Students and attendance
             try (Statement s = conn.createStatement();
                  ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM students")) {
                 if (rs.next() && rs.getInt(1) < 100) {
                     insert100DemoStudentsAndAttendance(conn);
+                }
+            }
+
+            // 8. Seed Student-Subject enrollments
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM student_subjects")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    enrollStudentsInSubjects(conn);
+                }
+            }
+
+            // 9. Seed Timetable
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM timetable")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertTimetable(conn);
+                }
+            }
+
+            // 10. Seed Leave Requests
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM leave_requests")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertLeaveRequests(conn);
+                }
+            }
+
+            // 11. Seed Notifications & Audit Logs
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM notifications")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertNotificationsAndAudits(conn);
                 }
             }
 
@@ -214,7 +423,8 @@ public class DatabaseInitService {
     }
 
     private static void insertSettings(Connection conn) throws SQLException {
-        String sql = "INSERT INTO settings (setting_key, setting_value, description) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO settings (setting_key, setting_value, description) VALUES (?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             Object[][] defaultSettings = {
                     {"college_name", "KIT ENGINEERING COLLEGE", "Configured Institution Name"},
@@ -224,7 +434,15 @@ public class DatabaseInitService {
                     {"working_days_target", "60", "Semester working days target"},
                     {"departments_list", "CSE,IT,AI&DS,ECE,EEE,MECH", "Offered Degree Departments"},
                     {"years_list", "1,2,3,4", "Academic Years"},
-                    {"sections_list", "A,B", "Class Sections"}
+                    {"sections_list", "A,B", "Class Sections"},
+                    {"count_approved_leave_as_present", "NO", "Count approved student leave as attendance present"},
+                    {"qr_expiration_minutes", "5", "QR code attendance session expiry time in minutes"},
+                    {"smtp_host", "smtp.gmail.com", "Outgoing SMTP mail server host"},
+                    {"smtp_port", "587", "Outgoing SMTP mail server port"},
+                    {"smtp_username", "", "SMTP mail user authentication account"},
+                    {"smtp_password", "", "SMTP mail user authentication password"},
+                    {"email_notifications_enabled", "NO", "Enable automatic email notifications"},
+                    {"app_theme", "LIGHT", "UI Theme Mode (LIGHT / DARK)"}
             };
             for (Object[] row : defaultSettings) {
                 ps.setString(1, (String) row[0]);
@@ -233,12 +451,13 @@ public class DatabaseInitService {
                 ps.addBatch();
             }
             ps.executeBatch();
-            LOGGER.info("Default settings inserted.");
+            LOGGER.info("Default settings inserted/updated.");
         }
     }
 
     private static void insertUsers(Connection conn) throws SQLException {
-        String sql = "INSERT INTO users (username, password_hash, full_name, role, email) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, password_hash, full_name, role, email, student_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE full_name = VALUES(full_name)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             // Admin: admin / admin123
             String adminHash = PasswordUtil.hashPassword("admin123");
@@ -247,6 +466,7 @@ public class DatabaseInitService {
             ps.setString(3, "System Administrator");
             ps.setString(4, "ADMIN");
             ps.setString(5, "admin@kit.edu.in");
+            ps.setNull(6, java.sql.Types.INTEGER);
             ps.addBatch();
 
             // Teacher: teacher / teacher123
@@ -256,10 +476,21 @@ public class DatabaseInitService {
             ps.setString(3, "Prof. Rajesh Sharma");
             ps.setString(4, "TEACHER");
             ps.setString(5, "teacher@kit.edu.in");
+            ps.setNull(6, java.sql.Types.INTEGER);
+            ps.addBatch();
+
+            // Student: student / student123 (mapped to student_id 1 / 24CSE001)
+            String studentHash = PasswordUtil.hashPassword("student123");
+            ps.setString(1, "student");
+            ps.setString(2, studentHash);
+            ps.setString(3, "Aarav Kumar (Student)");
+            ps.setString(4, "STUDENT");
+            ps.setString(5, "aarav.kumar@kit.edu.in");
+            ps.setInt(6, 1);
             ps.addBatch();
 
             ps.executeBatch();
-            LOGGER.info("Default users (admin, teacher) created.");
+            LOGGER.info("Default users (admin, teacher, student) created.");
         }
     }
 
@@ -306,6 +537,201 @@ public class DatabaseInitService {
             ps.executeBatch();
             LOGGER.info("Demo teachers inserted.");
         }
+    }
+
+    private static void insertPeriods(Connection conn) throws SQLException {
+        String sql = "INSERT INTO periods (period_number, period_name, start_time, end_time, is_active) VALUES (?, ?, ?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE period_name = VALUES(period_name)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            Object[][] periods = {
+                    {1, "Period 1", "09:00", "10:00", true},
+                    {2, "Period 2", "10:00", "11:00", true},
+                    {3, "Period 3", "11:15", "12:15", true},
+                    {4, "Period 4", "12:15", "13:15", true},
+                    {5, "Period 5", "14:00", "15:00", true},
+                    {6, "Period 6", "15:00", "16:00", true}
+            };
+            for (Object[] p : periods) {
+                ps.setInt(1, (Integer) p[0]);
+                ps.setString(2, (String) p[1]);
+                ps.setString(3, (String) p[2]);
+                ps.setString(4, (String) p[3]);
+                ps.setBoolean(5, (Boolean) p[4]);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            LOGGER.info("Periods inserted.");
+        }
+    }
+
+    private static void insertSubjects(Connection conn) throws SQLException {
+        String sql = "INSERT INTO subjects (subject_code, subject_name, department, year_of_study, semester, credits, teacher_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE subject_name = VALUES(subject_name)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            Object[][] subjects = {
+                    {"CS501", "Object Oriented Programming Java", "CSE", 3, "V", 4, 1},
+                    {"CS502", "Database Management Systems", "CSE", 3, "V", 4, 1},
+                    {"CS503", "Computer Networks", "CSE", 3, "V", 3, 1},
+                    {"CS504", "Operating Systems & Cloud", "CSE", 3, "V", 3, 1},
+                    {"IT501", "Web Technology & Frameworks", "IT", 3, "V", 4, 2},
+                    {"IT502", "Cloud Computing & DevOps", "IT", 3, "V", 3, 2},
+                    {"AD501", "Machine Learning Foundations", "AI&DS", 3, "V", 4, 3},
+                    {"AD502", "Deep Learning & Neural Networks", "AI&DS", 3, "V", 4, 3},
+                    {"EC501", "Digital Signal Processing", "ECE", 3, "V", 4, 4},
+                    {"EC502", "VLSI Design & Embedded Systems", "ECE", 3, "V", 3, 4},
+                    {"EE501", "Power Electronics & Drives", "EEE", 3, "V", 4, 5},
+                    {"EE502", "Control Systems & Automation", "EEE", 3, "V", 3, 5},
+                    {"ME501", "Applied Thermodynamics", "MECH", 3, "V", 4, 6},
+                    {"ME502", "Fluid Mechanics & Machinery", "MECH", 3, "V", 3, 6}
+            };
+            for (Object[] s : subjects) {
+                ps.setString(1, (String) s[0]);
+                ps.setString(2, (String) s[1]);
+                ps.setString(3, (String) s[2]);
+                ps.setInt(4, (Integer) s[3]);
+                ps.setString(5, (String) s[4]);
+                ps.setInt(6, (Integer) s[5]);
+                ps.setInt(7, (Integer) s[6]);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            LOGGER.info("Subjects inserted.");
+        }
+    }
+
+    private static void enrollStudentsInSubjects(Connection conn) throws SQLException {
+        String enrollSql = "INSERT IGNORE INTO student_subjects (student_id, subject_id) " +
+                           "SELECT s.student_id, sub.subject_id FROM students s " +
+                           "JOIN subjects sub ON s.department = sub.department";
+        try (Statement stmt = conn.createStatement()) {
+            int count = stmt.executeUpdate(enrollSql);
+            LOGGER.info("Enrolled students into subjects. Inserted records: " + count);
+        }
+    }
+
+    private static void insertTimetable(Connection conn) throws SQLException {
+        String sql = "INSERT INTO timetable (day_of_week, period_id, subject_id, teacher_id, department, year_of_study, section, room) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE room = VALUES(room)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+            int[][] cseGrid = {
+                    {1, 2, 3, 4, 1, 2},
+                    {2, 3, 4, 1, 3, 4},
+                    {3, 4, 1, 2, 2, 1},
+                    {4, 1, 2, 3, 4, 3},
+                    {1, 2, 3, 4, 1, 2}
+            };
+            for (int d = 0; d < days.length; d++) {
+                for (int p = 1; p <= 6; p++) {
+                    int subId = cseGrid[d][p - 1];
+                    ps.setString(1, days[d]);
+                    ps.setInt(2, p);
+                    ps.setInt(3, subId);
+                    ps.setInt(4, 1);
+                    ps.setString(5, "CSE");
+                    ps.setInt(6, 3);
+                    ps.setString(7, "A");
+                    ps.setString(8, "Lab Block LH-" + (100 + p));
+                    ps.addBatch();
+                }
+            }
+            ps.executeBatch();
+            LOGGER.info("Timetable slots inserted.");
+        }
+    }
+
+    private static void insertLeaveRequests(Connection conn) throws SQLException {
+        String sql = "INSERT INTO leave_requests (student_id, leave_type, from_date, to_date, reason, status, approved_by, approved_at, remarks) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Student 1 (Aarav Kumar) - Approved Medical Leave
+            ps.setInt(1, 1);
+            ps.setString(2, "Medical");
+            ps.setDate(3, Date.valueOf(LocalDate.of(2026, 8, 17)));
+            ps.setDate(4, Date.valueOf(LocalDate.of(2026, 8, 18)));
+            ps.setString(5, "Viral fever and doctor prescribed bed rest.");
+            ps.setString(6, "APPROVED");
+            ps.setString(7, "Prof. Rajesh Sharma");
+            ps.setTimestamp(8, java.sql.Timestamp.valueOf("2026-08-16 10:00:00"));
+            ps.setString(9, "Medical certificate verified. Approved.");
+            ps.addBatch();
+
+            // Student 2 (Arjun Raj) - Pending Event Leave
+            ps.setInt(1, 2);
+            ps.setString(2, "College Event");
+            ps.setDate(3, Date.valueOf(LocalDate.of(2026, 9, 10)));
+            ps.setDate(4, Date.valueOf(LocalDate.of(2026, 9, 11)));
+            ps.setString(5, "Participating in Inter-Collegiate Hackathon at IIT Madras.");
+            ps.setString(6, "PENDING");
+            ps.setNull(7, java.sql.Types.VARCHAR);
+            ps.setNull(8, java.sql.Types.TIMESTAMP);
+            ps.setString(9, "Awaiting department HOD nod.");
+            ps.addBatch();
+
+            // Student 3 (Aditya Iyer) - Rejected Leave
+            ps.setInt(1, 3);
+            ps.setString(2, "Personal");
+            ps.setDate(3, Date.valueOf(LocalDate.of(2026, 9, 21)));
+            ps.setDate(4, Date.valueOf(LocalDate.of(2026, 9, 22)));
+            ps.setString(5, "Family function out of town.");
+            ps.setString(6, "REJECTED");
+            ps.setString(7, "Prof. Rajesh Sharma");
+            ps.setTimestamp(8, java.sql.Timestamp.valueOf("2026-09-20 16:30:00"));
+            ps.setString(9, "Attendance shortage; internal exam week.");
+            ps.addBatch();
+
+            ps.executeBatch();
+            LOGGER.info("Demo leave requests inserted.");
+        }
+    }
+
+    private static void insertNotificationsAndAudits(Connection conn) throws SQLException {
+        // Notifications
+        String notifSql = "INSERT INTO notifications (title, message, category, target_role, is_read) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(notifSql)) {
+            ps.setString(1, "Welcome to KIT Engineering College Portal");
+            ps.setString(2, "Semester V attendance management system is live with QR scanning and subject-wise logs.");
+            ps.setString(3, "System");
+            ps.setString(4, "ALL");
+            ps.setBoolean(5, false);
+            ps.addBatch();
+
+            ps.setString(1, "Low Attendance Alert Threshold");
+            ps.setString(2, "12 students have attendance below the mandatory 75% threshold in CSE/IT.");
+            ps.setString(3, "Attendance");
+            ps.setString(4, "TEACHER");
+            ps.setBoolean(5, false);
+            ps.addBatch();
+
+            ps.setString(1, "Pending Leave Applications");
+            ps.setString(2, "1 leave request is currently pending your faculty mentor review.");
+            ps.setString(3, "Leave");
+            ps.setString(4, "TEACHER");
+            ps.setBoolean(5, false);
+            ps.addBatch();
+
+            ps.executeBatch();
+        }
+
+        // Audit Log
+        String auditSql = "INSERT INTO audit_logs (user_id, action, description, ip_address) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(auditSql)) {
+            ps.setString(1, "system");
+            ps.setString(2, "SYSTEM_INIT");
+            ps.setString(3, "Initialized KIT Engineering College Student Attendance Management System v2.0");
+            ps.setString(4, "127.0.0.1");
+            ps.addBatch();
+
+            ps.setString(1, "admin");
+            ps.setString(2, "CONFIG_UPDATE");
+            ps.setString(3, "Configured institution profile and semester periods");
+            ps.setString(4, "127.0.0.1");
+            ps.addBatch();
+
+            ps.executeBatch();
+        }
+        LOGGER.info("Notifications and Audit Logs seeded.");
     }
 
     private static void insert100DemoStudentsAndAttendance(Connection conn) throws SQLException {
@@ -358,10 +784,17 @@ public class DatabaseInitService {
         // Between Aug 03, 2026 and Sep 25, 2026 (exact 40 weekdays)
         List<LocalDate> workingDays = generate40WorkingDays();
 
-        String attSql = "INSERT INTO attendance (student_id, attendance_date, status) VALUES (?, ?, ?)";
+        String attSql = "INSERT INTO attendance (student_id, subject_id, attendance_date, period, status) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(attSql)) {
             for (DemoStudentSeed s : seedList) {
                 if (s.studentId == 0) continue;
+
+                int defaultSubId = 1;
+                if ("IT".equalsIgnoreCase(s.dept)) defaultSubId = 5;
+                else if ("AI&DS".equalsIgnoreCase(s.dept)) defaultSubId = 7;
+                else if ("ECE".equalsIgnoreCase(s.dept)) defaultSubId = 9;
+                else if ("EEE".equalsIgnoreCase(s.dept)) defaultSubId = 11;
+                else if ("MECH".equalsIgnoreCase(s.dept)) defaultSubId = 13;
 
                 // Determine target present probability based on student's assigned group
                 double targetRate = s.targetAttendanceRate;
@@ -370,8 +803,10 @@ public class DatabaseInitService {
                 for (LocalDate day : workingDays) {
                     boolean present = rnd.nextDouble() < targetRate;
                     ps.setInt(1, s.studentId);
-                    ps.setDate(2, Date.valueOf(day));
-                    ps.setString(3, present ? "PRESENT" : "ABSENT");
+                    ps.setInt(2, defaultSubId);
+                    ps.setDate(3, Date.valueOf(day));
+                    ps.setString(4, "Period 1");
+                    ps.setString(5, present ? "PRESENT" : "ABSENT");
                     ps.addBatch();
                 }
             }

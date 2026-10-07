@@ -10,8 +10,9 @@ public class User {
     private String username;
     private String passwordHash;
     private String fullName;
-    private String role; // "ADMIN" or "TEACHER"
+    private String role; // "ADMIN", "TEACHER", or "STUDENT"
     private String email;
+    private Integer studentId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -25,6 +26,9 @@ public class User {
         this.role = role;
         this.email = email;
     }
+
+    public Integer getStudentId() { return studentId; }
+    public void setStudentId(Integer studentId) { this.studentId = studentId; }
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
@@ -56,6 +60,10 @@ public class User {
 
     public boolean isTeacher() {
         return "TEACHER".equalsIgnoreCase(role);
+    }
+
+    public boolean isStudent() {
+        return "STUDENT".equalsIgnoreCase(role);
     }
 
     @Override

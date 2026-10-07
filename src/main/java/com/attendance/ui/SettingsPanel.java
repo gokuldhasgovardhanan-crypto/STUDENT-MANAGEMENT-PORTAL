@@ -24,6 +24,9 @@ public class SettingsPanel extends JPanel {
     private final JTextField txtDepartments;
     private final JTextField txtYears;
     private final JTextField txtSections;
+    private final JCheckBox chkCountLeave;
+    private final JSpinner spnQrExpiry;
+    private final JComboBox<String> cmbTheme;
 
     private final JLabel lblStatus;
 
@@ -70,6 +73,11 @@ public class SettingsPanel extends JPanel {
         txtYears = new JTextField(settings.getYearsCsv(), 25);
         txtSections = new JTextField(settings.getSectionsCsv(), 25);
 
+        chkCountLeave = new JCheckBox("Count approved student leave as attendance present", settings.isCountApprovedLeaveAsPresent());
+        spnQrExpiry = new JSpinner(new SpinnerNumberModel(settings.getQrExpirationMinutes() > 0 ? settings.getQrExpirationMinutes() : 5, 1, 60, 1));
+        cmbTheme = new JComboBox<>(new String[]{"LIGHT", "DARK"});
+        cmbTheme.setSelectedItem(settings.getAppTheme() != null ? settings.getAppTheme().toUpperCase() : "LIGHT");
+
         int r = 0;
         addFormRow(card, gbc, r++, "College / Institution Name *:", txtCollegeName);
         addFormRow(card, gbc, r++, "Academic Year *:", txtAcademicYear);
@@ -79,6 +87,9 @@ public class SettingsPanel extends JPanel {
         addFormRow(card, gbc, r++, "Departments (comma separated):", txtDepartments);
         addFormRow(card, gbc, r++, "Academic Years (comma separated):", txtYears);
         addFormRow(card, gbc, r++, "Sections (comma separated):", txtSections);
+        addFormRow(card, gbc, r++, "Institutional Leave Policy:", chkCountLeave);
+        addFormRow(card, gbc, r++, "QR Code Expiry (Minutes):", spnQrExpiry);
+        addFormRow(card, gbc, r++, "UI Appearance Theme:", cmbTheme);
 
         centerContainer.add(card);
         centerContainer.add(Box.createVerticalStrut(16));
@@ -95,14 +106,20 @@ public class SettingsPanel extends JPanel {
         lblMaint.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblMaint.setForeground(new Color(71, 85, 105));
 
-        ModernButton btnDbConfig = new ModernButton("Database Connection Settings", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnDbConfig = new ModernButton("Database Connection", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnBackupRestore = new ModernButton("💾 Backup & Restore SQL", ModernButton.ButtonType.PRIMARY);
         ModernButton btnResetSeed = new ModernButton("Re-seed 100 Demo Students & Data", ModernButton.ButtonType.DANGER);
 
         btnDbConfig.addActionListener(e -> openDbConfig());
+        btnBackupRestore.addActionListener(e -> {
+            BackupRestoreDialog dlg = new BackupRestoreDialog(SwingUtilities.getWindowAncestor(this));
+            dlg.setVisible(true);
+        });
         btnResetSeed.addActionListener(e -> reseedDemoData());
 
         maintCard.add(lblMaint);
         maintCard.add(btnDbConfig);
+        maintCard.add(btnBackupRestore);
         maintCard.add(btnResetSeed);
 
         centerContainer.add(maintCard);
@@ -152,6 +169,9 @@ public class SettingsPanel extends JPanel {
             s.setDepartmentsFromCsv(txtDepartments.getText().trim());
             s.setYearsFromCsv(txtYears.getText().trim());
             s.setSectionsFromCsv(txtSections.getText().trim());
+            s.setCountApprovedLeaveAsPresent(chkCountLeave.isSelected());
+            s.setQrExpirationMinutes((Integer) spnQrExpiry.getValue());
+            s.setAppTheme((String) cmbTheme.getSelectedItem());
 
             settingsService.saveSettings(s);
             lblStatus.setText("✓ Settings saved successfully!");

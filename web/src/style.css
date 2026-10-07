@@ -868,3 +868,212 @@ tr:hover td {
 .login-demo-btns button {
   flex: 1;
 }
+
+/* ===================================================================
+   V2.0 Modules: Timetable, QR Code, Leaves, Audits, Student Portal
+   =================================================================== */
+
+/* Timetable Grid */
+.timetable-grid-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.timetable-grid-table th {
+  background: var(--bg-subtle);
+  color: var(--primary-deep);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 2px solid var(--primary-border);
+}
+
+.timetable-grid-table td {
+  padding: 10px;
+  border: 1px solid var(--border-light);
+  vertical-align: top;
+  min-height: 80px;
+  background: #ffffff;
+}
+
+.timetable-slot-card {
+  background: #fff8f8;
+  border: 1px solid var(--primary-border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  transition: all 0.2s ease;
+}
+
+.timetable-slot-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-code {
+  font-weight: 800;
+  color: var(--primary-deep);
+}
+
+.slot-name {
+  color: var(--text-main);
+  margin-top: 2px;
+  font-size: 0.74rem;
+}
+
+.slot-faculty {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+.slot-room {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  background: var(--primary-light);
+  color: var(--primary-deep);
+  font-weight: 700;
+  border-radius: 4px;
+  font-size: 0.68rem;
+}
+
+/* QR Attendance Panel */
+.qr-session-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--primary-border);
+  text-align: center;
+}
+
+.qr-box {
+  width: 240px;
+  height: 240px;
+  background: #ffffff;
+  border: 2px solid var(--primary-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.qr-scanner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  animation: scanMove 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes scanMove {
+  0% { top: 4px; }
+  100% { top: 230px; }
+}
+
+.qr-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #fee2e2;
+  color: var(--primary-dark);
+  font-weight: 800;
+  font-size: 1.1rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
+}
+
+.qr-token-text {
+  font-family: monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+/* Student Portal Shortage Notice */
+.shortage-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+}
+
+.shortage-banner.shortage {
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  color: #991b1b;
+}
+
+.shortage-banner.good {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  color: #166534;
+}
+
+.formula-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+
+/* Notification Popover */
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--text-main);
+  transition: background 0.2s;
+}
+
+.notif-btn:hover {
+  background: var(--bg-hover);
+}
+
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}

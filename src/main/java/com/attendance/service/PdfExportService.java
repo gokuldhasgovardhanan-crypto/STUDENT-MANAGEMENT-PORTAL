@@ -20,25 +20,44 @@ import java.util.List;
  */
 public class PdfExportService {
 
-    private static final Color PRIMARY_COLOR = new Color(26, 86, 160);
-    private static final Color HEADER_BG = new Color(41, 128, 185);
-    private static final Color ALT_ROW_BG = new Color(245, 247, 250);
-    private static final Color BORDER_COLOR = new Color(220, 224, 230);
-    private static final Color PRESENT_COLOR = new Color(39, 174, 96);
-    private static final Color ABSENT_COLOR = new Color(192, 57, 43);
+    private static final Color PRIMARY_COLOR = new Color(168, 28, 28); // KIT Crimson Red
+    private static final Color HEADER_BG = new Color(153, 27, 27); // Rich Collegiate Red
+    private static final Color ALT_ROW_BG = new Color(254, 250, 250); // Clean warm white
+    private static final Color BORDER_COLOR = new Color(229, 215, 215);
+    private static final Color PRESENT_COLOR = new Color(34, 139, 34);
+    private static final Color ABSENT_COLOR = new Color(220, 38, 38);
 
     private static final Font TITLE_FONT = new Font(Font.HELVETICA, 16, Font.BOLD, PRIMARY_COLOR);
-    private static final Font SUBTITLE_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, Color.DARK_GRAY);
+    private static final Font SUBTITLE_FONT = new Font(Font.HELVETICA, 11, Font.BOLD, new Color(50, 50, 50));
     private static final Font META_FONT = new Font(Font.HELVETICA, 9, Font.NORMAL, Color.GRAY);
     private static final Font TH_FONT = new Font(Font.HELVETICA, 9, Font.BOLD, Color.WHITE);
     private static final Font TD_FONT = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.BLACK);
     private static final Font TD_BOLD = new Font(Font.HELVETICA, 8, Font.BOLD, Color.BLACK);
 
+    private static class PageFooterEvent extends PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+            cb.saveState();
+            String footerText = "KIT Engineering College — Student Attendance Portal | Page " + writer.getPageNumber();
+            cb.beginText();
+            try {
+                BaseFont bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                cb.setFontAndSize(bf, 8);
+                cb.setColorFill(Color.GRAY);
+                cb.showTextAligned(Element.ALIGN_CENTER, footerText, (document.right() + document.left()) / 2, document.bottom() - 15, 0);
+            } catch (Exception ignored) {}
+            cb.endText();
+            cb.restoreState();
+        }
+    }
+
     public void exportDailyAttendancePdf(String collegeName, LocalDate date, String dept, Integer year, String section,
                                          List<Attendance> records, File targetFile) throws IOException {
         Document document = new Document(PageSize.A4, 36, 36, 40, 40);
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            writer.setPageEvent(new PageFooterEvent());
             document.open();
 
             addHeader(document, collegeName, "Daily Attendance Report",
@@ -99,7 +118,8 @@ public class PdfExportService {
                                        List<Attendance> history, File targetFile) throws IOException {
         Document document = new Document(PageSize.A4, 36, 36, 40, 40);
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            writer.setPageEvent(new PageFooterEvent());
             document.open();
 
             addHeader(document, collegeName, "Individual Student Attendance Profile",
@@ -152,7 +172,8 @@ public class PdfExportService {
                                           List<StudentAttendanceSummary> summaries, File targetFile) throws IOException {
         Document document = new Document(PageSize.A4.rotate(), 30, 30, 36, 36); // Landscape for wide tables
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            writer.setPageEvent(new PageFooterEvent());
             document.open();
 
             addHeader(document, collegeName, reportTitle, subtitle);
@@ -197,6 +218,97 @@ public class PdfExportService {
         } finally {
             document.close();
         }
+    }
+
+    public void exportStudentAttendanceCardPdf(String collegeName, Student student,
+                                               List<java.util.Map<String, Object>> subjectBreakdown,
+                                               double overallPct, String status, File targetFile) throws IOException {
+        Document document = new Document(PageSize.A4, 36, 36, 40, 40);
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            writer.setPageEvent(new PageFooterEvent());
+            document.open();
+
+            addHeader(document, collegeName != null ? collegeName : "KIT ENGINEERING COLLEGE",
+                    "OFFICIAL STUDENT ATTENDANCE CARD",
+                    "Student: " + student.getStudentName() + " (" + student.getRegisterNo() + ")");
+
+            // Info Table
+            PdfPTable infoTable = new PdfPTable(4);
+            infoTable.setWidthPercentage(100);
+            infoTable.setSpacingAfter(12);
+            infoTable.setWidths(new float[]{2.5f, 3.5f, 2.5f, 3.5f});
+
+            addInfoRow(infoTable, "Student Name:", student.getStudentName(), "Register Number:", student.getRegisterNo());
+            addInfoRow(infoTable, "Department:", student.getDepartment(), "Year / Section:", student.getYearOfStudy() + " / " + student.getSection());
+            addInfoRow(infoTable, "Overall Attendance:", String.format("%.2f%%", overallPct), "Academic Standing:", status);
+            addInfoRow(infoTable, "Email Address:", student.getEmail() != null ? student.getEmail() : "N/A", "Phone Number:", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
+            document.add(infoTable);
+
+            // Subject breakdown
+            Paragraph subHead = new Paragraph("Subject-Wise Attendance Breakdown", SUBTITLE_FONT);
+            subHead.setSpacingBefore(5);
+            subHead.setSpacingAfter(8);
+            document.add(subHead);
+
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1.0f, 2.5f, 5.0f, 2.0f, 2.0f, 2.5f});
+            addTableHeader(table, new String[]{"S.No", "Subject Code", "Subject Name", "Conducted", "Attended", "Attendance %"});
+
+            int sno = 1;
+            boolean alt = false;
+            for (java.util.Map<String, Object> map : subjectBreakdown) {
+                Color bg = alt ? ALT_ROW_BG : Color.WHITE;
+                addCell(table, String.valueOf(sno++), TD_FONT, Element.ALIGN_CENTER, bg);
+                addCell(table, (String) map.get("subjectCode"), TD_BOLD, Element.ALIGN_LEFT, bg);
+                addCell(table, (String) map.get("subjectName"), TD_FONT, Element.ALIGN_LEFT, bg);
+                addCell(table, String.valueOf(map.get("conducted")), TD_FONT, Element.ALIGN_CENTER, bg);
+                addCell(table, String.valueOf(map.get("attended")), TD_FONT, Element.ALIGN_CENTER, bg);
+
+                double pct = (Double) map.get("percentage");
+                Color pctCol = pct >= 75.0 ? PRESENT_COLOR : ABSENT_COLOR;
+                Font pctFont = new Font(Font.HELVETICA, 8, Font.BOLD, pctCol);
+                addCell(table, String.format("%.1f%%", pct), pctFont, Element.ALIGN_CENTER, bg);
+
+                alt = !alt;
+            }
+            document.add(table);
+
+            // Signatures block
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph(" "));
+            PdfPTable sigTable = new PdfPTable(3);
+            sigTable.setWidthPercentage(100);
+            sigTable.setWidths(new float[]{3.3f, 3.3f, 3.3f});
+
+            addSignatureCell(sigTable, "Class Advisor / Mentor");
+            addSignatureCell(sigTable, "Head of Department (HOD)");
+            addSignatureCell(sigTable, "Principal / Dean Academic");
+            document.add(sigTable);
+
+        } catch (DocumentException e) {
+            throw new IOException("Failed to generate Student Attendance Card PDF", e);
+        } finally {
+            document.close();
+        }
+    }
+
+    private void addSignatureCell(PdfPTable table, String title) {
+        PdfPCell cell = new PdfPCell();
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPaddingTop(25);
+
+        Paragraph line = new Paragraph("___________________________", META_FONT);
+        line.setAlignment(Element.ALIGN_CENTER);
+        cell.addElement(line);
+
+        Paragraph text = new Paragraph(title, TD_BOLD);
+        text.setAlignment(Element.ALIGN_CENTER);
+        cell.addElement(text);
+
+        table.addCell(cell);
     }
 
     private void addHeader(Document doc, String collegeName, String title, String subtitle) throws DocumentException {

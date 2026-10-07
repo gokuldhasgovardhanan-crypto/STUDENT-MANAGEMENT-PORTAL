@@ -28,8 +28,20 @@ public class AttendanceService {
         return attendanceDAO.getAttendanceForClassAndDate(dept, year, section, date);
     }
 
+    public List<Attendance> getAttendanceForSession(int subjectId, String dept, int year, String section, LocalDate date, String period) {
+        return attendanceDAO.getAttendanceForSession(subjectId, dept, year, section, date, period);
+    }
+
     public boolean isAttendanceMarked(String dept, int year, String section, LocalDate date) {
         return attendanceDAO.isAttendanceRecorded(dept, year, section, date);
+    }
+
+    public boolean isSessionRecorded(int subjectId, String dept, int year, String section, LocalDate date, String period) {
+        return attendanceDAO.isSessionRecorded(subjectId, dept, year, section, date, period);
+    }
+
+    public boolean correctAttendance(int attendanceId, int studentId, String newStatus, String changedBy, String reason) {
+        return attendanceDAO.correctAttendance(attendanceId, studentId, newStatus, changedBy, reason);
     }
 
     public void saveAttendance(LocalDate date, List<Attendance> records) throws Exception {
@@ -58,6 +70,10 @@ public class AttendanceService {
 
     public StudentAttendanceSummary getStudentAttendanceSummary(int studentId) {
         return attendanceDAO.getStudentAttendanceSummary(studentId);
+    }
+
+    public List<java.util.Map<String, Object>> getSubjectWiseAttendanceForStudent(int studentId) {
+        return attendanceDAO.getSubjectWiseAttendanceForStudent(studentId);
     }
 
     public List<Attendance> getStudentAttendanceHistory(int studentId, LocalDate start, LocalDate end) {

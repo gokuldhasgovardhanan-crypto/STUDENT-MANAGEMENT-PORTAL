@@ -68,6 +68,18 @@
             <version>3.5.4</version>
         </dependency>
 
+        <!-- ZXing for QR Code Generation and Scanning Support -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
         <!-- JUnit 5 for Automated Verification -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

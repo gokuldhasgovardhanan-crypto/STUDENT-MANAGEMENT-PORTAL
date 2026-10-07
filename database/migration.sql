@@ -1,82 +1,15 @@
 -- ===================================================================
--- Student Attendance Management System - Database Schema (v2.0)
--- Database: student_attendance_db
--- Institution: KIT ENGINEERING COLLEGE
+-- Student Attendance Management System - Database Migration Script
+-- Version: 2.0.0 (Upgrade)
+-- Preserves all existing data (100 students, attendance, teachers, settings)
 -- ===================================================================
-
-CREATE DATABASE IF NOT EXISTS student_attendance_db
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
 
 USE student_attendance_db;
 
--- 1. System Settings Table
-CREATE TABLE IF NOT EXISTS settings (
-    setting_key VARCHAR(50) PRIMARY KEY,
-    setting_value VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+-- 1. Upgrade Users Role to include STUDENT
+ALTER TABLE users MODIFY COLUMN role ENUM('ADMIN', 'TEACHER', 'STUDENT') NOT NULL DEFAULT 'TEACHER';
 
--- 2. Users Table for Authentication & Roles (ADMIN, TEACHER, STUDENT)
-CREATE TABLE IF NOT EXISTS users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    role ENUM('ADMIN', 'TEACHER', 'STUDENT') NOT NULL DEFAULT 'TEACHER',
-    email VARCHAR(100) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_users_username (username),
-    INDEX idx_users_role (role)
-) ENGINE=InnoDB;
-
--- 3. Departments Table
-CREATE TABLE IF NOT EXISTS departments (
-    dept_id INT AUTO_INCREMENT PRIMARY KEY,
-    dept_code VARCHAR(20) NOT NULL UNIQUE,
-    dept_name VARCHAR(100) NOT NULL,
-    INDEX idx_dept_code (dept_code)
-) ENGINE=InnoDB;
-
--- 4. Teachers Table
-CREATE TABLE IF NOT EXISTS teachers (
-    teacher_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id VARCHAR(50) NOT NULL UNIQUE,
-    teacher_name VARCHAR(100) NOT NULL,
-    department VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_teacher_empid (employee_id),
-    INDEX idx_teacher_dept (department)
-) ENGINE=InnoDB;
-
--- 5. Students Table
-CREATE TABLE IF NOT EXISTS students (
-    student_id INT AUTO_INCREMENT PRIMARY KEY,
-    register_no VARCHAR(50) NOT NULL UNIQUE,
-    student_name VARCHAR(100) NOT NULL,
-    gender ENUM('Male', 'Female', 'Other') NOT NULL,
-    date_of_birth DATE NOT NULL,
-    department VARCHAR(50) NOT NULL,
-    year_of_study INT NOT NULL,
-    section VARCHAR(10) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL,
-    address TEXT NULL,
-    admission_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_students_regno (register_no),
-    INDEX idx_students_name (student_name),
-    INDEX idx_students_dept (department),
-    INDEX idx_students_year_sec (year_of_study, section)
-) ENGINE=InnoDB;
-
--- 6. Subjects Table
+-- 2. Create Subjects Table
 CREATE TABLE IF NOT EXISTS subjects (
     subject_id INT AUTO_INCREMENT PRIMARY KEY,
     subject_code VARCHAR(20) NOT NULL UNIQUE,
@@ -97,7 +30,7 @@ CREATE TABLE IF NOT EXISTS subjects (
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 7. Student-Subjects Relationship Table
+-- 3. Create Student-Subjects Relationship Table
 CREATE TABLE IF NOT EXISTS student_subjects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -118,7 +51,7 @@ CREATE TABLE IF NOT EXISTS student_subjects (
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 8. Periods Table
+-- 4. Create Periods Table
 CREATE TABLE IF NOT EXISTS periods (
     period_id INT AUTO_INCREMENT PRIMARY KEY,
     period_number INT NOT NULL UNIQUE,
@@ -128,7 +61,16 @@ CREATE TABLE IF NOT EXISTS periods (
     is_active BOOLEAN DEFAULT TRUE
 ) ENGINE=InnoDB;
 
--- 9. Timetable Table
+-- Insert Default Periods if empty
+INSERT IGNORE INTO periods (period_number, period_name, start_time, end_time) VALUES
+(1, 'Period 1', '09:00', '10:00'),
+(2, 'Period 2', '10:00', '11:00'),
+(3, 'Period 3', '11:15', '12:15'),
+(4, 'Period 4', '12:15', '13:15'),
+(5, 'Period 5', '14:00', '15:00'),
+(6, 'Period 6', '15:00', '16:00');
+
+-- 5. Create Timetable Table
 CREATE TABLE IF NOT EXISTS timetable (
     timetable_id INT AUTO_INCREMENT PRIMARY KEY,
     day_of_week VARCHAR(20) NOT NULL,
@@ -157,33 +99,59 @@ CREATE TABLE IF NOT EXISTS timetable (
         ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 10. Attendance Table (Subject-Wise & Period-Wise)
-CREATE TABLE IF NOT EXISTS attendance (
-    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    subject_id INT NULL,
-    attendance_date DATE NOT NULL,
-    period VARCHAR(20) DEFAULT 'Period 1',
-    status ENUM('PRESENT', 'ABSENT') NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_attendance_date (attendance_date),
-    INDEX idx_attendance_student (student_id),
-    INDEX idx_attendance_subject (subject_id),
-    INDEX idx_attendance_period (period),
-    CONSTRAINT fk_attendance_student
-        FOREIGN KEY (student_id)
-        REFERENCES students(student_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT fk_attendance_subject
-        FOREIGN KEY (subject_id)
-        REFERENCES subjects(subject_id)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE
-) ENGINE=InnoDB;
+-- 6. Upgrade Attendance Table for Subject-Wise and Period Support
+-- Add subject_id and period columns safely if not present
+SET @dbname = DATABASE();
+SET @tablename = 'attendance';
+SET @columnname = 'subject_id';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = @tablename
+      AND COLUMN_NAME = @columnname
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE attendance ADD COLUMN subject_id INT NULL AFTER student_id;'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
--- 11. QR Attendance Session Table
+SET @columnname = 'period';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = @tablename
+      AND COLUMN_NAME = @columnname
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE attendance ADD COLUMN period VARCHAR(20) DEFAULT "Period 1" AFTER attendance_date;'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Safely add Foreign Key to subject_id
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+    WHERE
+      CONSTRAINT_SCHEMA = @dbname
+      AND TABLE_NAME = @tablename
+      AND CONSTRAINT_NAME = 'fk_attendance_subject'
+  ) > 0,
+  'SELECT 1',
+  'ALTER TABLE attendance ADD CONSTRAINT fk_attendance_subject FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE SET NULL;'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- 7. Create QR Attendance Session Table
 CREATE TABLE IF NOT EXISTS attendance_session (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     token VARCHAR(64) NOT NULL UNIQUE,
@@ -209,7 +177,7 @@ CREATE TABLE IF NOT EXISTS attendance_session (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 12. Leave Requests Table
+-- 8. Create Leave Requests Table
 CREATE TABLE IF NOT EXISTS leave_requests (
     leave_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -232,7 +200,7 @@ CREATE TABLE IF NOT EXISTS leave_requests (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 13. Attendance Audit Table
+-- 9. Create Attendance Audit Table
 CREATE TABLE IF NOT EXISTS attendance_audit (
     audit_id INT AUTO_INCREMENT PRIMARY KEY,
     attendance_id INT NULL,
@@ -250,7 +218,7 @@ CREATE TABLE IF NOT EXISTS attendance_audit (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 14. General Audit Logs Table
+-- 10. Create General Audit Logs Table
 CREATE TABLE IF NOT EXISTS audit_logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
@@ -263,7 +231,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     INDEX idx_logs_time (timestamp)
 ) ENGINE=InnoDB;
 
--- 15. Notifications Table
+-- 11. Create Notifications Table
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
@@ -275,3 +243,15 @@ CREATE TABLE IF NOT EXISTS notifications (
     INDEX idx_notif_role (target_role),
     INDEX idx_notif_read (is_read)
 ) ENGINE=InnoDB;
+
+-- 12. Insert New System Settings
+INSERT INTO settings (setting_key, setting_value, description) VALUES
+('count_approved_leave_as_present', 'NO', 'Count approved student leave as attendance present (YES/NO)'),
+('qr_expiration_minutes', '5', 'QR code attendance session expiry time in minutes'),
+('smtp_host', 'smtp.gmail.com', 'Outgoing SMTP mail server host'),
+('smtp_port', '587', 'Outgoing SMTP mail server port'),
+('smtp_username', '', 'SMTP mail user authentication account'),
+('smtp_password', '', 'SMTP mail user authentication password'),
+('email_notifications_enabled', 'NO', 'Enable automatic email notifications for low attendance and leaves'),
+('app_theme', 'LIGHT', 'UI Theme Mode (LIGHT / DARK)')
+ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);

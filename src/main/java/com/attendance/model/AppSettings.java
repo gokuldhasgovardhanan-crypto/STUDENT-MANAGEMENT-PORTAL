@@ -17,6 +17,16 @@ public class AppSettings {
     private List<String> years = new ArrayList<>(Arrays.asList("1", "2", "3", "4"));
     private List<String> sections = new ArrayList<>(Arrays.asList("A", "B"));
 
+    // Upgrade v2.0 Settings
+    private String countApprovedLeaveAsPresent = "NO"; // "YES" / "NO"
+    private int qrExpirationMinutes = 5;
+    private String smtpHost = "smtp.gmail.com";
+    private int smtpPort = 587;
+    private String smtpUsername = "";
+    private String smtpPassword = "";
+    private String emailNotificationsEnabled = "NO"; // "YES" / "NO"
+    private String appTheme = "LIGHT"; // "LIGHT" / "DARK"
+
     public AppSettings() {}
 
     public String getCollegeName() { return collegeName; }
@@ -42,6 +52,41 @@ public class AppSettings {
 
     public List<String> getSections() { return sections; }
     public void setSections(List<String> sections) { this.sections = sections; }
+
+    public String getCountApprovedLeaveAsPresent() { return countApprovedLeaveAsPresent; }
+    public void setCountApprovedLeaveAsPresent(String countApprovedLeaveAsPresent) { this.countApprovedLeaveAsPresent = countApprovedLeaveAsPresent; }
+    public void setCountApprovedLeaveAsPresent(boolean countApprovedLeaveAsPresent) {
+        this.countApprovedLeaveAsPresent = countApprovedLeaveAsPresent ? "YES" : "NO";
+    }
+
+    public boolean isCountApprovedLeaveAsPresent() {
+        return "YES".equalsIgnoreCase(countApprovedLeaveAsPresent);
+    }
+
+    public int getQrExpirationMinutes() { return qrExpirationMinutes; }
+    public void setQrExpirationMinutes(int qrExpirationMinutes) { this.qrExpirationMinutes = qrExpirationMinutes; }
+
+    public String getSmtpHost() { return smtpHost; }
+    public void setSmtpHost(String smtpHost) { this.smtpHost = smtpHost; }
+
+    public int getSmtpPort() { return smtpPort; }
+    public void setSmtpPort(int smtpPort) { this.smtpPort = smtpPort; }
+
+    public String getSmtpUsername() { return smtpUsername; }
+    public void setSmtpUsername(String smtpUsername) { this.smtpUsername = smtpUsername; }
+
+    public String getSmtpPassword() { return smtpPassword; }
+    public void setSmtpPassword(String smtpPassword) { this.smtpPassword = smtpPassword; }
+
+    public String getEmailNotificationsEnabled() { return emailNotificationsEnabled; }
+    public void setEmailNotificationsEnabled(String emailNotificationsEnabled) { this.emailNotificationsEnabled = emailNotificationsEnabled; }
+
+    public boolean isEmailEnabled() {
+        return "YES".equalsIgnoreCase(emailNotificationsEnabled);
+    }
+
+    public String getAppTheme() { return appTheme; }
+    public void setAppTheme(String appTheme) { this.appTheme = appTheme; }
 
     public String getDepartmentsCsv() {
         return String.join(",", departments);

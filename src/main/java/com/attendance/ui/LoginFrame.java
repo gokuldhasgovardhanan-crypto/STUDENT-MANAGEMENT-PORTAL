@@ -24,31 +24,38 @@ public class LoginFrame extends JFrame {
     public LoginFrame() {
         this.authService = AuthenticationService.getInstance();
 
-        setTitle("Login - Student Attendance Management System");
+        setTitle("Login - KIT ENGINEERING COLLEGE - Student Attendance System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(460, 520);
+        setSize(480, 550);
         setResizable(false);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Header Banner
+        // Header Banner with KIT Engineering College Crimson Red Branding
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBackground(new Color(15, 23, 42)); // Dark Slate
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(28, 24, 28, 24));
+        headerPanel.setBackground(new Color(139, 0, 0)); // Crimson Dark Red #8B0000
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
 
-        JLabel lblApp = new JLabel("Student Attendance");
-        lblApp.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        JLabel lblCollege = new JLabel("KIT ENGINEERING COLLEGE");
+        lblCollege.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblCollege.setForeground(new Color(254, 243, 199)); // Warm amber/gold accent
+        lblCollege.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel lblApp = new JLabel("Student Attendance Management System");
+        lblApp.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblApp.setForeground(Color.WHITE);
         lblApp.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblSub = new JLabel("Management System");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        lblSub.setForeground(new Color(148, 163, 184));
+        JLabel lblSub = new JLabel("Enterprise Academic Portal v2.0");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSub.setForeground(new Color(254, 202, 202));
         lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        headerPanel.add(lblApp);
+        headerPanel.add(lblCollege);
         headerPanel.add(Box.createVerticalStrut(4));
+        headerPanel.add(lblApp);
+        headerPanel.add(Box.createVerticalStrut(2));
         headerPanel.add(lblSub);
 
         add(headerPanel, BorderLayout.NORTH);
@@ -57,7 +64,7 @@ public class LoginFrame extends JFrame {
         JPanel center = new JPanel();
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
         center.setBackground(Color.WHITE);
-        center.setBorder(BorderFactory.createEmptyBorder(24, 36, 16, 36));
+        center.setBorder(BorderFactory.createEmptyBorder(20, 36, 16, 36));
 
         JLabel lblSign = new JLabel("Sign In to Your Account");
         lblSign.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -67,7 +74,7 @@ public class LoginFrame extends JFrame {
         center.add(Box.createVerticalStrut(14));
 
         // Form Fields
-        JLabel lblUser = new JLabel("Username:");
+        JLabel lblUser = new JLabel("Username / Reg No:");
         lblUser.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblUser.setForeground(new Color(71, 85, 105));
         lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -98,7 +105,7 @@ public class LoginFrame extends JFrame {
         center.add(txtPassword);
         center.add(Box.createVerticalStrut(14));
 
-        // Quick demo buttons
+        // Quick demo buttons (Admin, Teacher, Student)
         JPanel demoBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         demoBox.setOpaque(false);
         demoBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -107,11 +114,13 @@ public class LoginFrame extends JFrame {
         lblDemo.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblDemo.setForeground(new Color(100, 116, 139));
 
-        ModernButton btnFillAdmin = new ModernButton("admin", ModernButton.ButtonType.SECONDARY);
-        ModernButton btnFillTeacher = new ModernButton("teacher", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnFillAdmin = new ModernButton("Admin", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnFillTeacher = new ModernButton("Teacher", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnFillStudent = new ModernButton("Student", ModernButton.ButtonType.SECONDARY);
 
         btnFillAdmin.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         btnFillTeacher.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        btnFillStudent.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 
         btnFillAdmin.addActionListener(e -> {
             txtUsername.setText("admin");
@@ -123,9 +132,15 @@ public class LoginFrame extends JFrame {
             txtPassword.setText("teacher123");
         });
 
+        btnFillStudent.addActionListener(e -> {
+            txtUsername.setText("student");
+            txtPassword.setText("student123");
+        });
+
         demoBox.add(lblDemo);
         demoBox.add(btnFillAdmin);
         demoBox.add(btnFillTeacher);
+        demoBox.add(btnFillStudent);
         center.add(demoBox);
         center.add(Box.createVerticalStrut(14));
 

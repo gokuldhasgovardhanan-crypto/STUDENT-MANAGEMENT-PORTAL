@@ -107,18 +107,27 @@ public class StudentPanel extends JPanel {
         ModernButton btnEdit = new ModernButton("Edit", ModernButton.ButtonType.SECONDARY);
         ModernButton btnDelete = new ModernButton("Delete", ModernButton.ButtonType.DANGER);
         ModernButton btnProfile = new ModernButton("View Profile", ModernButton.ButtonType.SECONDARY);
+        ModernButton btnImportExcel = new ModernButton("📥 Import Excel", ModernButton.ButtonType.SECONDARY);
         ModernButton btnExportExcel = new ModernButton("Export Excel", ModernButton.ButtonType.SUCCESS);
 
         btnAdd.addActionListener(e -> addStudent());
         btnEdit.addActionListener(e -> editSelectedStudent());
         btnDelete.addActionListener(e -> deleteSelectedStudent());
         btnProfile.addActionListener(e -> viewSelectedProfile());
+        btnImportExcel.addActionListener(e -> {
+            ExcelImportDialog dlg = new ExcelImportDialog(SwingUtilities.getWindowAncestor(this));
+            dlg.setVisible(true);
+            if (dlg.isImported()) {
+                loadData();
+            }
+        });
         btnExportExcel.addActionListener(e -> exportStudentList());
 
         actionsRight.add(btnAdd);
         actionsRight.add(btnEdit);
         actionsRight.add(btnDelete);
         actionsRight.add(btnProfile);
+        actionsRight.add(btnImportExcel);
         actionsRight.add(btnExportExcel);
 
         topFilterCard.add(actionsRight, BorderLayout.EAST);
@@ -157,6 +166,10 @@ public class StudentPanel extends JPanel {
         add(bottomBar, BorderLayout.SOUTH);
 
         // Initial Load
+        applyFilter();
+    }
+
+    public void loadData() {
         applyFilter();
     }
 

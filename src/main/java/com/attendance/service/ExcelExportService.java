@@ -207,6 +207,68 @@ public class ExcelExportService {
      * Sheet 4: Low Attendance
      * Sheet 5: Student List
      */
+    /**
+     * Requirement 22: Printable & Exportable Student Attendance Card (Excel format)
+     */
+    public void exportStudentAttendanceCard(Student student, java.util.List<java.util.Map<String, Object>> subjectBreakdown,
+                                           double overallPct, String status, File targetFile) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Attendance Card");
+            CellStyle titleStyle = createTitleStyle(workbook);
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle dataStyle = createDataStyle(workbook);
+            CellStyle labelStyle = createBoldStyle(workbook);
+
+            Row r0 = sheet.createRow(0);
+            Cell c0 = r0.createCell(0);
+            c0.setCellValue("KIT ENGINEERING COLLEGE - STUDENT ATTENDANCE CARD");
+            c0.setCellStyle(titleStyle);
+
+            createLabelValueRow(sheet, 2, "Student Name:", student.getStudentName(), "Register No:", student.getRegisterNo());
+            createLabelValueRow(sheet, 3, "Department:", student.getDepartment(), "Year / Section:", student.getYearOfStudy() + " - " + student.getSection());
+            createLabelValueRow(sheet, 4, "Overall Attendance:", String.format("%.2f%%", overallPct), "Status:", status);
+            createLabelValueRow(sheet, 5, "Generated On:", DateUtil.formatCurrentTimestamp(), "", "");
+
+            String[] headers = {"S.No", "Subject Code", "Subject Name", "Conducted", "Attended", "Attendance %"};
+            Row hr = sheet.createRow(7);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = hr.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 8;
+            int sno = 1;
+            for (java.util.Map<String, Object> map : subjectBreakdown) {
+                Row row = sheet.createRow(rowIdx++);
+                createCell(row, 0, sno++, dataStyle);
+                createCell(row, 1, (String) map.get("subjectCode"), dataStyle);
+                createCell(row, 2, (String) map.get("subjectName"), dataStyle);
+                createCell(row, 3, (Integer) map.get("conducted"), dataStyle);
+                createCell(row, 4, (Integer) map.get("attended"), dataStyle);
+                createCell(row, 5, String.format("%.1f%%", (Double) map.get("percentage")), dataStyle);
+            }
+
+            sheet.createFreezePane(0, 8);
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(targetFile)) {
+                workbook.write(fos);
+            }
+        }
+    }
+
+    /**
+     * Requirement 20: Comprehensive multi-sheet workbook:
+     * Sheet 1: Summary
+     * Sheet 2: Students
+     * Sheet 3: Attendance
+     * Sheet 4: Subject-wise
+     * Sheet 5: Low Attendance
+     * Sheet 6: Leave
+     */
     public void exportCompleteAttendanceSummaryWorkbook(AppSettings settings, DashboardStats stats,
                                                        List<StudentAttendanceSummary> summaries,
                                                        List<Attendance> recentAttendance,
@@ -218,25 +280,66 @@ public class ExcelExportService {
             Sheet sheet1 = workbook.createSheet("Summary");
             populateExecutiveSummarySheet(workbook, sheet1, settings, stats);
 
-            // Sheet 2: Student Attendance
-            Sheet sheet2 = workbook.createSheet("Student Attendance");
-            populateSummarySheet(workbook, sheet2, "Consolidated Student Attendance Report", summaries);
+            // Sheet 2: Students
+            Sheet sheet2 = workbook.createSheet("Students");
+            populateStudentListSheet(workbook, sheet2, students);
 
-            // Sheet 3: Daily Attendance (Recent)
-            Sheet sheet3 = workbook.createSheet("Daily Attendance");
-            populateDailySheet(workbook, sheet3, recentAttendance);
+            // Sheet 3: Attendance
+            Sheet sheet3 = workbook.createSheet("Attendance");
+            populateSummarySheet(workbook, sheet3, "Consolidated Student Attendance Report", summaries);
 
-            // Sheet 4: Low Attendance
-            Sheet sheet4 = workbook.createSheet("Low Attendance");
-            populateSummarySheet(workbook, sheet4, "Students with Low Attendance (< " + settings.getRequiredAttendancePct() + "%)", lowStudents);
+            // Sheet 4: Subject-wise (Recent Attendance records with Subject & Period)
+            Sheet sheet4 = workbook.createSheet("Subject-wise");
+            populateDailySheet(workbook, sheet4, recentAttendance);
 
-            // Sheet 5: Student List
-            Sheet sheet5 = workbook.createSheet("Student List");
-            populateStudentListSheet(workbook, sheet5, students);
+            // Sheet 5: Low Attendance
+            Sheet sheet5 = workbook.createSheet("Low Attendance");
+            populateSummarySheet(workbook, sheet5, "Students with Low Attendance (< " + settings.getRequiredAttendancePct() + "%)", lowStudents);
+
+            // Sheet 6: Leave
+            Sheet sheet6 = workbook.createSheet("Leave");
+            populateLeaveSheet(workbook, sheet6, students);
 
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                 workbook.write(fos);
             }
+        }
+    }
+
+    private void populateLeaveSheet(Workbook workbook, Sheet sheet, List<Student> students) {
+        CellStyle titleStyle = createTitleStyle(workbook);
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle dataStyle = createDataStyle(workbook);
+
+        Row r0 = sheet.createRow(0);
+        Cell c0 = r0.createCell(0);
+        c0.setCellValue("Student Leave Records Summary");
+        c0.setCellStyle(titleStyle);
+
+        String[] headers = {"S.No", "Register No", "Student Name", "Department", "Year", "Section", "Leave Status"};
+        Row hr = sheet.createRow(2);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = hr.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        int rowIdx = 3;
+        int sno = 1;
+        for (Student s : students) {
+            Row row = sheet.createRow(rowIdx++);
+            createCell(row, 0, sno++, dataStyle);
+            createCell(row, 1, s.getRegisterNo(), dataStyle);
+            createCell(row, 2, s.getStudentName(), dataStyle);
+            createCell(row, 3, s.getDepartment(), dataStyle);
+            createCell(row, 4, s.getYearOfStudy(), dataStyle);
+            createCell(row, 5, s.getSection(), dataStyle);
+            createCell(row, 6, "Regular", dataStyle);
+        }
+
+        sheet.createFreezePane(0, 3);
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
         }
     }
 

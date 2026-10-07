@@ -141,3 +141,50 @@ export function generateInitialAttendance(students, workingDays) {
   }
   return attendance;
 }
+
+export const DEFAULT_PERIODS = [
+  { id: 1, name: "Period 1", timeSlot: "09:00 AM - 10:00 AM" },
+  { id: 2, name: "Period 2", timeSlot: "10:00 AM - 11:00 AM" },
+  { id: 3, name: "Period 3", timeSlot: "11:15 AM - 12:15 PM" },
+  { id: 4, name: "Period 4", timeSlot: "01:00 PM - 02:00 PM" },
+  { id: 5, name: "Period 5", timeSlot: "02:00 PM - 03:00 PM" },
+  { id: 6, name: "Period 6", timeSlot: "03:15 PM - 04:15 PM" }
+];
+
+export const DEFAULT_SUBJECTS = [
+  { id: 1, code: "CS501", name: "Design & Analysis of Algorithms", dept: "CSE", year: 3, sem: "V", credits: 4, teacherId: 1, teacherName: "Dr. R. Ramanathan" },
+  { id: 2, code: "CS502", name: "Database Management Systems", dept: "CSE", year: 3, sem: "V", credits: 4, teacherId: 1, teacherName: "Dr. R. Ramanathan" },
+  { id: 3, code: "IT501", name: "Full Stack Web Development", dept: "IT", year: 3, sem: "V", credits: 3, teacherId: 2, teacherName: "Dr. S. Gayathri" },
+  { id: 4, code: "IT502", name: "Cloud Computing & DevOps", dept: "IT", year: 3, sem: "V", credits: 3, teacherId: 2, teacherName: "Dr. S. Gayathri" },
+  { id: 5, code: "AI501", name: "Deep Learning Foundations", dept: "AI&DS", year: 3, sem: "V", credits: 4, teacherId: 3, teacherName: "Prof. K. Venkatesh" },
+  { id: 6, code: "EC501", name: "Digital Signal Processing", dept: "ECE", year: 3, sem: "V", credits: 4, teacherId: 4, teacherName: "Dr. P. Meenakshi" },
+  { id: 7, code: "EE501", name: "Power Electronics & Drives", dept: "EEE", year: 3, sem: "V", credits: 3, teacherId: 5, teacherName: "Prof. M. Suresh" },
+  { id: 8, code: "ME501", name: "Design of Transmission Systems", dept: "MECH", year: 3, sem: "V", credits: 4, teacherId: 6, teacherName: "Dr. T. Revathi" }
+];
+
+export const DEFAULT_TIMETABLE = [
+  { id: 1, day: "Monday", periodId: 1, periodName: "Period 1", subjectCode: "CS501", subjectName: "Design & Analysis of Algorithms", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "LH-201" },
+  { id: 2, day: "Monday", periodId: 2, periodName: "Period 2", subjectCode: "CS502", subjectName: "Database Management Systems", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "LH-201" },
+  { id: 3, day: "Tuesday", periodId: 1, periodName: "Period 1", subjectCode: "CS502", subjectName: "Database Management Systems", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "Lab-3" },
+  { id: 4, day: "Wednesday", periodId: 3, periodName: "Period 3", subjectCode: "CS501", subjectName: "Design & Analysis of Algorithms", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "LH-201" },
+  { id: 5, day: "Thursday", periodId: 2, periodName: "Period 2", subjectCode: "CS501", subjectName: "Design & Analysis of Algorithms", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "LH-201" },
+  { id: 6, day: "Friday", periodId: 4, periodName: "Period 4", subjectCode: "CS502", subjectName: "Database Management Systems", teacherName: "Dr. R. Ramanathan", dept: "CSE", year: 3, sec: "A", room: "LH-201" }
+];
+
+export const DEFAULT_LEAVES = [
+  { id: 1, studentId: 1, studentName: "Aarav Kumar", regNo: "24CSE001", dept: "CSE", leaveType: "OD", fromDate: "2026-08-15", toDate: "2026-08-16", reason: "Participating in Smart India Hackathon Regional Finals", status: "APPROVED", approvedBy: "Dr. R. Ramanathan", remarks: "Approved for National Competition" },
+  { id: 2, studentId: 15, studentName: "Manoj Murugan", regNo: "24CSE015", dept: "CSE", leaveType: "Medical", fromDate: "2026-09-02", toDate: "2026-09-04", reason: "Viral fever with medical doctor prescription", status: "PENDING", approvedBy: null, remarks: null },
+  { id: 3, studentId: 21, studentName: "Vijay Bose", regNo: "24IT001", dept: "IT", leaveType: "Personal", fromDate: "2026-09-10", toDate: "2026-09-11", reason: "Family wedding event in Madurai", status: "REJECTED", approvedBy: "Dr. S. Gayathri", remarks: "Attendance below 75% cutoff threshold" }
+];
+
+export const DEFAULT_NOTIFICATIONS = [
+  { id: 1, title: "Academic Attendance Cutoff", message: "Mandatory 75% attendance cutoff for Semester V Anna University Examinations.", type: "ALERT", targetRole: "ALL", date: "2026-10-01 09:00" },
+  { id: 2, title: "QR Code Attendance Enabled", message: "Students can now scan lecture session QR codes directly from the student portal.", type: "INFO", targetRole: "STUDENT", date: "2026-10-03 10:30" },
+  { id: 3, title: "Leave Approvals Pending", message: "You have 1 pending student OD/Medical leave application awaiting review.", type: "REMINDER", targetRole: "TEACHER", date: "2026-10-06 14:15" }
+];
+
+export const DEFAULT_AUDIT_LOGS = [
+  { id: 1, action: "ATTENDANCE_CORRECTION", user: "Dr. R. Ramanathan", details: "Corrected 24CSE001 on 2026-08-12 from ABSENT to PRESENT (Reason: Student attended authorized seminar)", timestamp: "2026-10-02 11:24" },
+  { id: 2, action: "SETTINGS_UPDATE", user: "admin", details: "Updated college name to KIT ENGINEERING COLLEGE and enabled Leave Counting Policy", timestamp: "2026-10-04 15:40" },
+  { id: 3, action: "SUBJECT_ENROLLMENT", user: "admin", details: "Enrolled 20 students of Dept CSE Year 3 to CS501 Algorithms", timestamp: "2026-10-05 10:15" }
+];

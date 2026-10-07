@@ -17,7 +17,7 @@ public class UserDAO {
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
     public User findByUsername(String username) {
-        String sql = "SELECT user_id, username, password_hash, full_name, role, email, created_at, updated_at " +
+        String sql = "SELECT user_id, username, password_hash, full_name, role, email, student_id, created_at, updated_at " +
                      "FROM users WHERE username = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -28,7 +28,18 @@ public class UserDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding user by username: " + username, e);
+            // Fallback if student_id column is not yet present in existing db
+            String fallbackSql = "SELECT user_id, username, password_hash, full_name, role, email, created_at, updated_at " +
+                                 "FROM users WHERE username = ?";
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return mapUser(rs);
+                }
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "Error finding user by username: " + username, ex);
+            }
         }
         return null;
     }
@@ -124,6 +135,12 @@ public class UserDAO {
         u.setFullName(rs.getString("full_name"));
         u.setRole(rs.getString("role"));
         u.setEmail(rs.getString("email"));
+        try {
+            int sid = rs.getInt("student_id");
+            if (!rs.wasNull()) {
+                u.setStudentId(sid);
+            }
+        } catch (SQLException ignored) {}
         Timestamp ct = rs.getTimestamp("created_at");
         if (ct != null) u.setCreatedAt(ct.toLocalDateTime());
         Timestamp ut = rs.getTimestamp("updated_at");

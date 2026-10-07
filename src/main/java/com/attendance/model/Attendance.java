@@ -4,12 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Model representing an Attendance Record.
+ * Model representing an Attendance Record with Subject-wise and Period support.
  */
 public class Attendance {
     private int attendanceId;
     private int studentId;
+    private Integer subjectId;
     private LocalDate attendanceDate;
+    private String period = "Period 1";
     private String status; // "PRESENT" or "ABSENT"
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -21,6 +23,10 @@ public class Attendance {
     private int yearOfStudy;
     private String section;
 
+    // Associated subject info for display
+    private String subjectCode;
+    private String subjectName;
+
     public Attendance() {}
 
     public Attendance(int attendanceId, int studentId, LocalDate attendanceDate, String status) {
@@ -30,14 +36,29 @@ public class Attendance {
         this.status = status;
     }
 
+    public Attendance(int attendanceId, int studentId, Integer subjectId, LocalDate attendanceDate, String period, String status) {
+        this.attendanceId = attendanceId;
+        this.studentId = studentId;
+        this.subjectId = subjectId;
+        this.attendanceDate = attendanceDate;
+        this.period = period != null ? period : "Period 1";
+        this.status = status;
+    }
+
     public int getAttendanceId() { return attendanceId; }
     public void setAttendanceId(int attendanceId) { this.attendanceId = attendanceId; }
 
     public int getStudentId() { return studentId; }
     public void setStudentId(int studentId) { this.studentId = studentId; }
 
+    public Integer getSubjectId() { return subjectId; }
+    public void setSubjectId(Integer subjectId) { this.subjectId = subjectId; }
+
     public LocalDate getAttendanceDate() { return attendanceDate; }
     public void setAttendanceDate(LocalDate attendanceDate) { this.attendanceDate = attendanceDate; }
+
+    public String getPeriod() { return period; }
+    public void setPeriod(String period) { this.period = period; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -62,6 +83,12 @@ public class Attendance {
 
     public String getSection() { return section; }
     public void setSection(String section) { this.section = section; }
+
+    public String getSubjectCode() { return subjectCode; }
+    public void setSubjectCode(String subjectCode) { this.subjectCode = subjectCode; }
+
+    public String getSubjectName() { return subjectName; }
+    public void setSubjectName(String subjectName) { this.subjectName = subjectName; }
 
     public boolean isPresent() {
         return "PRESENT".equalsIgnoreCase(status);

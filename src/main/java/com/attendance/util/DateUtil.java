@@ -29,6 +29,10 @@ public class DateUtil {
         return LocalDateTime.now().format(REPORT_TIMESTAMP_FORMAT);
     }
 
+    public static String formatDisplayDateTime(LocalDateTime dateTime) {
+        return dateTime != null ? dateTime.format(REPORT_TIMESTAMP_FORMAT) : "";
+    }
+
     public static LocalDate parseDisplayDate(String text) {
         if (text == null || text.trim().isEmpty()) return null;
         try {

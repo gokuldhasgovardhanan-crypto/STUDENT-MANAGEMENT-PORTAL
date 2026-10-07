@@ -106,6 +106,25 @@ public class StudentDAO {
         return false;
     }
 
+    public boolean insert(Student student) {
+        return addStudent(student);
+    }
+
+    public boolean isRegisterNoTaken(String registerNo, int excludeStudentId) {
+        String sql = "SELECT student_id FROM students WHERE register_no = ? AND student_id != ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, registerNo);
+            ps.setInt(2, excludeStudentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking if register_no is taken: " + registerNo, e);
+        }
+        return false;
+    }
+
     public boolean updateStudent(Student student) {
         String sql = "UPDATE students SET register_no = ?, student_name = ?, gender = ?, date_of_birth = ?, " +
                      "department = ?, year_of_study = ?, section = ?, email = ?, phone_number = ?, " +

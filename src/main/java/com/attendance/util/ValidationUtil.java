@@ -45,4 +45,9 @@ public class ValidationUtil {
     public static boolean isValidAttendanceStatus(String status) {
         return "PRESENT".equalsIgnoreCase(status) || "ABSENT".equalsIgnoreCase(status);
     }
+
+    public static boolean isValidRegisterNo(String regNo) {
+        if (isEmpty(regNo)) return false;
+        return regNo.trim().matches("^[a-zA-Z0-9\\-_/]{3,30}$");
+    }
 }
