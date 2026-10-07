@@ -123,4 +123,16 @@ public class AttendanceService {
 
         return stats;
     }
+
+    public java.util.Map<String, Integer> getAttendanceDistributionCounts() {
+        return attendanceDAO.getAttendanceDistribution();
+    }
+
+    public java.util.Map<String, Double> getMonthlyAttendanceTrend() {
+        return attendanceDAO.getMonthlyAttendanceTrend();
+    }
+
+    public java.util.Map<String, Double> getSubjectAverageAttendance() {
+        return attendanceDAO.getSubjectAverageAttendance();
+    }
 }

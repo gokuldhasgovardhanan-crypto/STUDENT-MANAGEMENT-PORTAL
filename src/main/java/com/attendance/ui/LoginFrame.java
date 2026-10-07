@@ -42,13 +42,13 @@ public class LoginFrame extends JFrame {
         lblCollege.setForeground(new Color(254, 243, 199)); // Warm amber/gold accent
         lblCollege.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblApp = new JLabel("Student Attendance Management System");
-        lblApp.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        JLabel lblApp = new JLabel("SMART STUDENT ATTENDANCE MANAGEMENT SYSTEM");
+        lblApp.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblApp.setForeground(Color.WHITE);
         lblApp.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblSub = new JLabel("Enterprise Academic Portal v2.0");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblSub = new JLabel("A Database-Driven Attendance Monitoring and Reporting Application");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblSub.setForeground(new Color(254, 202, 202));
         lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
 

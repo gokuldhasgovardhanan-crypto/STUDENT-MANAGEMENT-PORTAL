@@ -4148,3 +4148,18 @@ INSERT INTO attendance (student_id, attendance_date, status) VALUES
 (100, '2026-09-23', 'ABSENT'),
 (100, '2026-09-24', 'PRESENT'),
 (100, '2026-09-25', 'PRESENT');
+
+-- Declared Institutional Holidays
+INSERT INTO holidays (holiday_date, holiday_name, description) VALUES
+('2026-08-15', 'Independence Day', 'National Holiday'),
+('2026-08-27', 'Janmashtami', 'Festival Holiday'),
+('2026-09-07', 'Vinayaka Chaturthi', 'Festival Holiday'),
+('2026-09-16', 'Milad-un-Nabi', 'Declared Holiday'),
+('2026-10-02', 'Gandhi Jayanti', 'National Holiday'),
+('2026-10-20', 'Ayutha Pooja', 'Festival Holiday'),
+('2026-10-21', 'Vijaya Dashami', 'Festival Holiday'),
+('2026-11-08', 'Deepavali / Diwali', 'Festival Holiday'),
+('2026-12-25', 'Christmas Day', 'Festival Holiday'),
+('2027-01-01', 'New Year\'s Day', 'Annual Holiday'),
+('2027-01-14', 'Pongal / Makar Sankranti', 'Harvest Festival'),
+('2027-01-26', 'Republic Day', 'National Holiday');

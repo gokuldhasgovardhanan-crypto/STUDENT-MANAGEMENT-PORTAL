@@ -146,14 +146,17 @@ public class StudentProfileDialog extends JDialog {
 
         ModernButton btnExcel = new ModernButton("EXPORT TO EXCEL", ModernButton.ButtonType.SUCCESS);
         ModernButton btnPdf = new ModernButton("EXPORT TO PDF", ModernButton.ButtonType.PRIMARY);
+        ModernButton btnCert = new ModernButton("ATTENDANCE CERTIFICATE", ModernButton.ButtonType.SECONDARY);
         ModernButton btnClose = new ModernButton("CLOSE", ModernButton.ButtonType.SECONDARY);
 
         btnExcel.addActionListener(e -> exportExcel());
         btnPdf.addActionListener(e -> exportPdf());
+        btnCert.addActionListener(e -> exportCertificate());
         btnClose.addActionListener(e -> dispose());
 
         btnBar.add(btnExcel);
         btnBar.add(btnPdf);
+        btnBar.add(btnCert);
         btnBar.add(btnClose);
 
         add(btnBar, BorderLayout.SOUTH);
@@ -205,6 +208,24 @@ public class StudentProfileDialog extends JDialog {
                         "Export Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Failed to export PDF: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void exportCertificate() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("Attendance_Certificate_" + student.getRegisterNo() + ".pdf"));
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File target = chooser.getSelectedFile();
+            if (!target.getName().toLowerCase().endsWith(".pdf")) {
+                target = new File(target.getParentFile(), target.getName() + ".pdf");
+            }
+            try {
+                pdfExportService.exportAttendanceCertificatePdf(settings.getCollegeName(), student, summary, settings.getAcademicYear(), target);
+                JOptionPane.showMessageDialog(this, "Attendance Certificate exported successfully!\nSaved to: " + target.getAbsolutePath(),
+                        "Certificate Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Failed to export certificate: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

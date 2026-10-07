@@ -59,6 +59,7 @@ public class DatabaseInitService {
 
             if (forceRecreate) {
                 stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 0");
+                stmt.executeUpdate("DROP TABLE IF EXISTS holidays");
                 stmt.executeUpdate("DROP TABLE IF EXISTS notifications");
                 stmt.executeUpdate("DROP TABLE IF EXISTS audit_logs");
                 stmt.executeUpdate("DROP TABLE IF EXISTS attendance_audit");
@@ -306,6 +307,17 @@ public class DatabaseInitService {
                     ") ENGINE=InnoDB"
             );
 
+            // Create holidays
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS holidays (" +
+                    "holiday_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "holiday_date DATE NOT NULL UNIQUE, " +
+                    "holiday_name VARCHAR(100) NOT NULL, " +
+                    "description VARCHAR(255) NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ") ENGINE=InnoDB"
+            );
+
             // If tables existed from v1, ensure new columns are added safely
             try {
                 stmt.executeUpdate("ALTER TABLE users MODIFY COLUMN role ENUM('ADMIN', 'TEACHER', 'STUDENT') NOT NULL DEFAULT 'TEACHER'");
@@ -414,6 +426,14 @@ public class DatabaseInitService {
                  ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM notifications")) {
                 if (rs.next() && rs.getInt(1) == 0) {
                     insertNotificationsAndAudits(conn);
+                }
+            }
+
+            // 12. Seed Institutional Holidays
+            try (Statement s = conn.createStatement();
+                 ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM holidays")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    insertHolidays(conn);
                 }
             }
 
@@ -954,5 +974,33 @@ public class DatabaseInitService {
         }
 
         return list;
+    }
+
+    private static void insertHolidays(Connection conn) throws SQLException {
+        String sql = "INSERT IGNORE INTO holidays (holiday_date, holiday_name, description) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            Object[][] holidays = {
+                    {Date.valueOf(LocalDate.of(2026, 8, 15)), "Independence Day", "National Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 8, 27)), "Janmashtami", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 9, 7)), "Vinayaka Chaturthi", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 9, 16)), "Milad-un-Nabi", "Declared Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 10, 2)), "Gandhi Jayanti", "National Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 10, 20)), "Ayutha Pooja", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 10, 21)), "Vijaya Dashami", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 11, 8)), "Deepavali / Diwali", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2026, 12, 25)), "Christmas Day", "Festival Holiday"},
+                    {Date.valueOf(LocalDate.of(2027, 1, 1)), "New Year's Day", "Annual Holiday"},
+                    {Date.valueOf(LocalDate.of(2027, 1, 14)), "Pongal / Makar Sankranti", "Harvest Festival"},
+                    {Date.valueOf(LocalDate.of(2027, 1, 26)), "Republic Day", "National Holiday"}
+            };
+            for (Object[] h : holidays) {
+                ps.setDate(1, (Date) h[0]);
+                ps.setString(2, (String) h[1]);
+                ps.setString(3, (String) h[2]);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            LOGGER.info("Seeded 12 declared academic holidays.");
+        }
     }
 }

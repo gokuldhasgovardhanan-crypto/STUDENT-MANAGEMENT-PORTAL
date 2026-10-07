@@ -107,16 +107,19 @@ public class StudentDashboardPanel extends JPanel {
 
         ModernButton btnQrCheckIn = new ModernButton("📷 QR Check-in", ModernButton.ButtonType.PRIMARY);
         ModernButton btnApplyLeave = new ModernButton("📝 Apply Leave", ModernButton.ButtonType.SUCCESS);
+        ModernButton btnCert = new ModernButton("📜 Certificate", ModernButton.ButtonType.SECONDARY);
         ModernButton btnExportPdf = new ModernButton("📄 PDF Card", ModernButton.ButtonType.SECONDARY);
         ModernButton btnExportExcel = new ModernButton("📊 Excel Card", ModernButton.ButtonType.SECONDARY);
 
         btnQrCheckIn.addActionListener(e -> onQrCheckIn());
         btnApplyLeave.addActionListener(e -> onApplyLeave());
+        btnCert.addActionListener(e -> onExportCertificate());
         btnExportPdf.addActionListener(e -> onExportPdf());
         btnExportExcel.addActionListener(e -> onExportExcel());
 
         actionBtns.add(btnQrCheckIn);
         actionBtns.add(btnApplyLeave);
+        actionBtns.add(btnCert);
         actionBtns.add(btnExportPdf);
         actionBtns.add(btnExportExcel);
         headerBar.add(actionBtns, BorderLayout.EAST);
@@ -356,6 +359,29 @@ public class StudentDashboardPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Student Attendance Card Excel exported successfully!", "Export Complete", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error exporting Excel: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void onExportCertificate() {
+        if (currentStudent == null || summary == null) return;
+        AppSettings settings = settingsService.getSettings();
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File(currentStudent.getRegisterNo() + "_Attendance_Certificate.pdf"));
+        int res = chooser.showSaveDialog(this);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            try {
+                pdfExportService.exportAttendanceCertificatePdf(
+                        settings.getCollegeName(),
+                        currentStudent,
+                        summary,
+                        settings.getAcademicYear(),
+                        chooser.getSelectedFile()
+                );
+                JOptionPane.showMessageDialog(this, "✓ Official Attendance Certificate generated successfully!\nFile: " + chooser.getSelectedFile().getAbsolutePath(),
+                        "Certificate Exported", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error generating certificate: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

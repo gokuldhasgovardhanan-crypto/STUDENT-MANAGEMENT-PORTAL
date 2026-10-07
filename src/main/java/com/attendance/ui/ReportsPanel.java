@@ -111,16 +111,19 @@ public class ReportsPanel extends JPanel {
         ModernButton btnGen = new ModernButton("GENERATE REPORT", ModernButton.ButtonType.PRIMARY);
         ModernButton btnExcel = new ModernButton("EXPORT TO EXCEL", ModernButton.ButtonType.SUCCESS);
         ModernButton btnPdf = new ModernButton("EXPORT TO PDF", ModernButton.ButtonType.PRIMARY);
+        ModernButton btnCert = new ModernButton("CERTIFICATE", ModernButton.ButtonType.SECONDARY);
         ModernButton btnSummaryWb = new ModernButton("COMPLETE WORKBOOK", ModernButton.ButtonType.SECONDARY);
 
         btnGen.addActionListener(e -> generateReport());
         btnExcel.addActionListener(e -> exportExcel());
         btnPdf.addActionListener(e -> exportPdf());
+        btnCert.addActionListener(e -> exportCertificate());
         btnSummaryWb.addActionListener(e -> exportCompleteWorkbook());
 
         exportBtns.add(btnGen);
         exportBtns.add(btnExcel);
         exportBtns.add(btnPdf);
+        exportBtns.add(btnCert);
         exportBtns.add(btnSummaryWb);
 
         row1.add(exportBtns, BorderLayout.EAST);
@@ -484,6 +487,39 @@ public class ReportsPanel extends JPanel {
                         "File: " + target.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Failed to generate workbook: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void exportCertificate() {
+        Student s = (Student) cmbStudent.getSelectedItem();
+        if (s == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a student from the Student dropdown filter to generate their official attendance certificate.",
+                    "Select Student", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        AppSettings settings = settingsService.getSettings();
+        StudentAttendanceSummary sum = attendanceService.getStudentAttendanceSummary(s.getStudentId());
+        if (sum == null) {
+            JOptionPane.showMessageDialog(this, "No attendance summary data found for student.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new File("Attendance_Certificate_" + s.getRegisterNo() + ".pdf"));
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File target = chooser.getSelectedFile();
+            if (!target.getName().toLowerCase().endsWith(".pdf")) {
+                target = new File(target.getParentFile(), target.getName() + ".pdf");
+            }
+            try {
+                pdfExportService.exportAttendanceCertificatePdf(settings.getCollegeName(), s, sum, settings.getAcademicYear(), target);
+                JOptionPane.showMessageDialog(this, "✓ Official Attendance Certificate generated successfully!\nFile: " + target.getAbsolutePath(),
+                        "Certificate Generated", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Failed to generate certificate: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

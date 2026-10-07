@@ -108,6 +108,7 @@ public class SettingsPanel extends JPanel {
 
         ModernButton btnDbConfig = new ModernButton("Database Connection", ModernButton.ButtonType.SECONDARY);
         ModernButton btnBackupRestore = new ModernButton("💾 Backup & Restore SQL", ModernButton.ButtonType.PRIMARY);
+        ModernButton btnHolidays = new ModernButton("📅 Declared Holidays", ModernButton.ButtonType.SECONDARY);
         ModernButton btnResetSeed = new ModernButton("Re-seed 100 Demo Students & Data", ModernButton.ButtonType.DANGER);
 
         btnDbConfig.addActionListener(e -> openDbConfig());
@@ -115,11 +116,16 @@ public class SettingsPanel extends JPanel {
             BackupRestoreDialog dlg = new BackupRestoreDialog(SwingUtilities.getWindowAncestor(this));
             dlg.setVisible(true);
         });
+        btnHolidays.addActionListener(e -> {
+            HolidayDialog dlg = new HolidayDialog(SwingUtilities.getWindowAncestor(this));
+            dlg.setVisible(true);
+        });
         btnResetSeed.addActionListener(e -> reseedDemoData());
 
         maintCard.add(lblMaint);
         maintCard.add(btnDbConfig);
         maintCard.add(btnBackupRestore);
+        maintCard.add(btnHolidays);
         maintCard.add(btnResetSeed);
 
         centerContainer.add(maintCard);

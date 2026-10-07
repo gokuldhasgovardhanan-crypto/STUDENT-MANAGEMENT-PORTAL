@@ -255,3 +255,28 @@ INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('email_notifications_enabled', 'NO', 'Enable automatic email notifications for low attendance and leaves'),
 ('app_theme', 'LIGHT', 'UI Theme Mode (LIGHT / DARK)')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
+
+-- 13. Create Institutional Holidays Table
+CREATE TABLE IF NOT EXISTS holidays (
+    holiday_id INT AUTO_INCREMENT PRIMARY KEY,
+    holiday_date DATE NOT NULL UNIQUE,
+    holiday_name VARCHAR(100) NOT NULL,
+    description VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_holiday_date (holiday_date)
+) ENGINE=InnoDB;
+
+-- 14. Seed Institutional Holidays
+INSERT IGNORE INTO holidays (holiday_date, holiday_name, description) VALUES
+('2026-08-15', 'Independence Day', 'National Holiday'),
+('2026-08-27', 'Janmashtami', 'Festival Holiday'),
+('2026-09-07', 'Vinayaka Chaturthi', 'Festival Holiday'),
+('2026-09-16', 'Milad-un-Nabi', 'Declared Holiday'),
+('2026-10-02', 'Gandhi Jayanti', 'National Holiday'),
+('2026-10-20', 'Ayutha Pooja', 'Festival Holiday'),
+('2026-10-21', 'Vijaya Dashami', 'Festival Holiday'),
+('2026-11-08', 'Deepavali / Diwali', 'Festival Holiday'),
+('2026-12-25', 'Christmas Day', 'Festival Holiday'),
+('2027-01-01', 'New Year\'s Day', 'Annual Holiday'),
+('2027-01-14', 'Pongal / Makar Sankranti', 'Harvest Festival'),
+('2027-01-26', 'Republic Day', 'National Holiday');

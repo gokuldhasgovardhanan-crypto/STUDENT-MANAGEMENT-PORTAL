@@ -372,4 +372,97 @@ public class PdfExportService {
         cell.setBorderColor(BORDER_COLOR);
         table.addCell(cell);
     }
+
+    /**
+     * Generates a prestigious, print-ready Attendance Certificate in PDF format.
+     */
+    public void exportAttendanceCertificatePdf(String collegeName, Student student,
+                                               StudentAttendanceSummary summary,
+                                               String academicYear, File targetFile) throws IOException {
+        Document document = new Document(PageSize.A4.rotate(), 40, 40, 40, 40);
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(targetFile));
+            document.open();
+
+            // Outer decorative borders
+            PdfContentByte cb = writer.getDirectContent();
+            cb.setLineWidth(3.5f);
+            cb.setColorStroke(PRIMARY_COLOR);
+            cb.rectangle(25, 25, PageSize.A4.rotate().getWidth() - 50, PageSize.A4.rotate().getHeight() - 50);
+            cb.stroke();
+
+            cb.setLineWidth(1.2f);
+            cb.setColorStroke(new Color(202, 138, 4)); // Gold border
+            cb.rectangle(31, 31, PageSize.A4.rotate().getWidth() - 62, PageSize.A4.rotate().getHeight() - 62);
+            cb.stroke();
+
+            // College Heading
+            Paragraph col = new Paragraph((collegeName != null && !collegeName.isEmpty()) ? collegeName.toUpperCase() : "KIT ENGINEERING COLLEGE",
+                    new Font(Font.HELVETICA, 22, Font.BOLD, PRIMARY_COLOR));
+            col.setAlignment(Element.ALIGN_CENTER);
+            col.setSpacingBefore(12);
+            document.add(col);
+
+            Paragraph aff = new Paragraph("Approved by AICTE, New Delhi • Affiliated to Anna University",
+                    new Font(Font.HELVETICA, 9, Font.ITALIC, new Color(100, 116, 139)));
+            aff.setAlignment(Element.ALIGN_CENTER);
+            aff.setSpacingBefore(2);
+            document.add(aff);
+
+            // Title
+            Paragraph tit = new Paragraph("ATTENDANCE CERTIFICATE",
+                    new Font(Font.HELVETICA, 18, Font.BOLD, new Color(30, 41, 59)));
+            tit.setAlignment(Element.ALIGN_CENTER);
+            tit.setSpacingBefore(16);
+            tit.setSpacingAfter(18);
+            document.add(tit);
+
+            // Certification Body
+            String text = "This is to certify that " + student.getStudentName() +
+                    " (Register Number: " + student.getRegisterNo() + "), a student of " +
+                    "Year " + student.getYearOfStudy() + ", Section " + student.getSection() +
+                    " in the Department of " + student.getDepartment() +
+                    ", has recorded an overall cumulative attendance of " +
+                    String.format("%.2f%%", summary.getAttendancePercentage()) +
+                    " (" + summary.getStatus() + ") during the Academic Year " +
+                    (academicYear != null ? academicYear : "2026-27") + ".";
+
+            Paragraph body = new Paragraph(text, new Font(Font.HELVETICA, 12, Font.NORMAL, new Color(30, 41, 59)));
+            body.setAlignment(Element.ALIGN_CENTER);
+            body.setLeading(20);
+            body.setSpacingAfter(18);
+            document.add(body);
+
+            // Status note
+            String standing = summary.getAttendancePercentage() >= 75.0
+                    ? "✓ Status: Academic attendance criteria satisfied. Eligible to sit for semester examinations."
+                    : "⚠️ Status: Attendance shortage below the mandatory 75% threshold. Subject to institutional regulations.";
+            Paragraph stPara = new Paragraph(standing,
+                    new Font(Font.HELVETICA, 10, Font.BOLD, summary.getAttendancePercentage() >= 75.0 ? PRESENT_COLOR : ABSENT_COLOR));
+            stPara.setAlignment(Element.ALIGN_CENTER);
+            stPara.setSpacingAfter(30);
+            document.add(stPara);
+
+            // Signatures block
+            PdfPTable sigTable = new PdfPTable(3);
+            sigTable.setWidthPercentage(90);
+            sigTable.setWidths(new float[]{3.3f, 3.3f, 3.3f});
+
+            addSignatureCell(sigTable, "Class Advisor / Mentor");
+            addSignatureCell(sigTable, "Head of Department (HOD)");
+            addSignatureCell(sigTable, "Principal / Dean Academic");
+            document.add(sigTable);
+
+            // Date of Issue
+            Paragraph dateGen = new Paragraph("Date of Issue: " + DateUtil.formatDisplayDate(LocalDate.now()), META_FONT);
+            dateGen.setAlignment(Element.ALIGN_LEFT);
+            dateGen.setSpacingBefore(10);
+            document.add(dateGen);
+
+        } catch (DocumentException e) {
+            throw new IOException("Failed to generate Attendance Certificate PDF", e);
+        } finally {
+            document.close();
+        }
+    }
 }

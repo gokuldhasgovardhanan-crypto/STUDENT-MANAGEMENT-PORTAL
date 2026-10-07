@@ -36,6 +36,7 @@ public class DashboardFrame extends JFrame {
     private TeacherPanel teacherPanel;
     private AuditLogPanel auditLogPanel;
     private SettingsPanel settingsPanel;
+    private AnalyticsPanel analyticsPanel;
     private StudentDashboardPanel studentDashboardPanel;
 
     private final JLabel lblCollegeHeader;
@@ -163,6 +164,7 @@ public class DashboardFrame extends JFrame {
             timetablePanel = new TimetablePanel();
             leavePanel = new LeaveManagementPanel();
             reportsPanel = new ReportsPanel();
+            analyticsPanel = new AnalyticsPanel();
             teacherPanel = new TeacherPanel();
             auditLogPanel = new AuditLogPanel();
             settingsPanel = new SettingsPanel();
@@ -174,6 +176,7 @@ public class DashboardFrame extends JFrame {
             mainContent.add(timetablePanel, "TIMETABLE");
             mainContent.add(leavePanel, "LEAVES");
             mainContent.add(reportsPanel, "REPORTS");
+            mainContent.add(analyticsPanel, "ANALYTICS");
             mainContent.add(teacherPanel, "TEACHERS");
             mainContent.add(auditLogPanel, "AUDIT_LOGS");
             mainContent.add(settingsPanel, "SETTINGS");
@@ -185,6 +188,7 @@ public class DashboardFrame extends JFrame {
             JButton btnNavTimetable = createNavButton("🗓️  Timetable", "TIMETABLE");
             JButton btnNavLeaves = createNavButton("🏖️  Leave Requests", "LEAVES");
             JButton btnNavReports = createNavButton("📑  Reports & Export", "REPORTS");
+            JButton btnNavAnalytics = createNavButton("📈  Analytics & Risk", "ANALYTICS");
             JButton btnNavTeachers = createNavButton("👨‍🏫  Faculty / Staff", "TEACHERS");
             JButton btnNavAudit = createNavButton("🛡️  Audit Logs", "AUDIT_LOGS");
             JButton btnNavSettings = createNavButton("⚙️  Settings", "SETTINGS");
@@ -202,6 +206,8 @@ public class DashboardFrame extends JFrame {
             sidebar.add(btnNavLeaves);
             sidebar.add(Box.createVerticalStrut(4));
             sidebar.add(btnNavReports);
+            sidebar.add(Box.createVerticalStrut(4));
+            sidebar.add(btnNavAnalytics);
             sidebar.add(Box.createVerticalStrut(4));
 
             if (isAdmin) {
@@ -261,6 +267,8 @@ public class DashboardFrame extends JFrame {
                     auditLogPanel.loadData();
                 } else if ("REPORTS".equals(cardName) && reportsPanel != null) {
                     reportsPanel.generateReport();
+                } else if ("ANALYTICS".equals(cardName) && analyticsPanel != null) {
+                    analyticsPanel.refreshAnalyticsData();
                 } else if ("TEACHERS".equals(cardName) && teacherPanel != null) {
                     teacherPanel.applyFilter();
                 }

@@ -275,3 +275,13 @@ CREATE TABLE IF NOT EXISTS notifications (
     INDEX idx_notif_role (target_role),
     INDEX idx_notif_read (is_read)
 ) ENGINE=InnoDB;
+
+-- 16. Institutional Holidays Table
+CREATE TABLE IF NOT EXISTS holidays (
+    holiday_id INT AUTO_INCREMENT PRIMARY KEY,
+    holiday_date DATE NOT NULL UNIQUE,
+    holiday_name VARCHAR(100) NOT NULL,
+    description VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_holiday_date (holiday_date)
+) ENGINE=InnoDB;

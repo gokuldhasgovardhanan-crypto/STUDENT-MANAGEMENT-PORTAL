@@ -23,6 +23,9 @@ public class AttendanceCalculatorResult {
     private boolean decliningTrend; // true if recent weeks have shown significant attendance drop
     private String recommendation;
 
+    // Maximum classes that can be missed while maintaining required percentage: floor((A - R*T) / R)
+    private int maxClassesCanBeMissed;
+
     public AttendanceCalculatorResult() {}
 
     public int getStudentId() { return studentId; }
@@ -52,6 +55,9 @@ public class AttendanceCalculatorResult {
     public int getClassesNeededToReachRequired() { return classesNeededToReachRequired; }
     public void setClassesNeededToReachRequired(int classesNeededToReachRequired) { this.classesNeededToReachRequired = classesNeededToReachRequired; }
 
+    public int getMaxClassesCanBeMissed() { return maxClassesCanBeMissed; }
+    public void setMaxClassesCanBeMissed(int maxClassesCanBeMissed) { this.maxClassesCanBeMissed = maxClassesCanBeMissed; }
+
     public boolean isMeetingRequirement() { return meetingRequirement; }
     public void setMeetingRequirement(boolean meetingRequirement) { this.meetingRequirement = meetingRequirement; }
 
@@ -72,8 +78,10 @@ public class AttendanceCalculatorResult {
         if (recommendation != null && !recommendation.trim().isEmpty()) {
             return recommendation;
         }
-        return isShortage()
-                ? ("Shortage: Attend next " + classesNeededToReachRequired + " classes consecutively.")
-                : "Good standing. Attendance requirement satisfied.";
+        if (isShortage()) {
+            return "Shortage: Attend next " + classesNeededToReachRequired + " consecutive classes to reach " + String.format("%.0f%%", requiredPercentage) + ".";
+        } else {
+            return "In Good Standing. You can miss up to " + maxClassesCanBeMissed + " classes while staying at or above " + String.format("%.0f%%", requiredPercentage) + ".";
+        }
     }
 }

@@ -1,377 +1,243 @@
-# Student Attendance Management System
-
-A production-grade, full-featured desktop application built with **Java 17**, **Java Swing (FlatLaf Modern UI)**, **JDBC**, **MySQL 8.x**, **Apache POI**, and **OpenPDF**.
-
-Designed with clean MVC architecture (Model, DAO, Service, and UI layers), this application provides an end-to-end solution for academic institutions to manage students, faculty, daily attendance marking, dynamic analytics, executive reports, and professional Excel/PDF exports.
-
----
-
-## 1. Key Features
-
-### 🔐 Secure Login & Role-Based Access Control
-- Stored in MySQL `users` table with **BCrypt password hashing** (`$2a$10$...`).
-- **Admin Role**: Full access to Dashboard, Students, Attendance, Reports, Teachers, and Settings.
-- **Teacher Role**: Access to Dashboard, Students, Attendance, and Reports.
-- Quick credentials autofill on the login screen for testing.
-- Change password dialog accessible right from the header.
-- Real-time MySQL connectivity telemetry indicator on login.
-
-### 📊 Modern Executive Dashboard
-- **Sidebar Navigation**: Dashboard, Students, Attendance, Reports, Teachers, Settings, and Logout.
-- **Dynamic Live KPI Metric Cards** (sourced 100% from MySQL):
-  - *Total Students* (enrolled count)
-  - *Present Today*
-  - *Absent Today*
-  - *Attendance Not Marked* (pending marking today)
-  - *Average Attendance* (college-wide dynamic percentage)
-  - *Students Below 75%* (requiring immediate academic intervention)
-- **Department Attendance Comparison Chart**:
-  - Custom Java Swing 2D vector chart rendering attendance performance per department with target threshold indicator.
-- **Low Attendance Quick Alert Table**:
-  - Live preview table showing students below required percentage with one-click export to Excel and PDF.
-
-### 👥 Student Management
-- **Add Student**:
-  - Fields: Auto-generated Student ID, Register Number, Full Name, Gender, Date of Birth, Department, Year of Study (1–4), Section (A/B), Email, Phone, Address, Admission Date.
-  - Strict input validations (Register number uniqueness, email format, phone digits, name pattern, required fields).
-- **View Students**:
-  - Interactive `JTable` with 32px row height, sorting, and responsive layout.
-  - Live search by Name and Register Number.
-  - Dropdown filters by Department, Year of Study, and Section.
-- **Edit Student**: Update student particulars with immediate MySQL reflection.
-- **Delete Student**: Confirmation modal (`YES / NO`) with foreign-key cascade safety.
-- **Student Profile**:
-  - Comprehensive modal showing student academic details, working days, present/absent count, attendance %, standing badge, and full historical log.
-  - Export individual student profile to Excel (`.xlsx`) and PDF.
-
-### 👨‍🏫 Teacher Management
-- Fields: Employee ID, Teacher Name, Department, Email, Phone.
-- Features: Add Teacher, Search Faculty, Edit Profile, Delete Faculty with database validation.
-
-### 📝 Attendance Module
-- Top filter bar: **Date**, **Department**, **Year**, and **Section**.
-- Automatically queries and loads enrolled students for the class.
-- Status toggle: `PRESENT` / `ABSENT` via dropdown badge editor.
-- Ergonomic batch buttons:
-  - `MARK ALL PRESENT`
-  - `MARK ALL ABSENT`
-  - `SAVE ATTENDANCE`
-  - `RESET`
-- **Duplicate Attendance Prevention**:
-  - Enforced by MySQL `UNIQUE (student_id, attendance_date)` constraint.
-  - If attendance already exists for that date, prompts:
-    ```text
-    Attendance already recorded for this date.
-    Do you want to edit it?
-    YES / NO
-    ```
-  - Batch updates execute atomically inside a single JDBC transaction.
-
-### 📈 Automatic Attendance Calculation & Dynamic Status
-- Formula:
-  $$\text{Attendance Percentage} = \left(\frac{\text{Present Days}}{\text{Total Working Days}}\right) \times 100$$
-- Dynamic status tiers (configurable in Settings):
-  - **$\ge$ 85%**: Excellent (Green badge)
-  - **75% – 84.99%**: Good (Blue badge)
-  - **65% – 74.99%**: Warning (Yellow badge)
-  - **$<$ 65%**: Critical (Red badge)
-
-### 📑 Reports Module
-Supports 6 dedicated report types:
-1. **Daily Attendance Report**: Filter by Date, Department, Year, Section.
-2. **Monthly Attendance Report**: Filter by Month (1–12), Year, Department, Year of Study, Section.
-3. **Date Range Report**: Filter by From Date, To Date, Department, Year, Section.
-4. **Student-wise Attendance Report**: Select individual student and date range.
-5. **Department-wise Summary**: College-wide comparison of attendance rates across engineering branches.
-6. **Low Attendance Report**: Lists all students below configured criteria (default 75%).
-
-### 📊 Real Excel Export (Apache POI `.xlsx`)
-- Generates genuine, styled Microsoft Excel `.xlsx` files:
-  - Header styling with Royal Blue fill, bold white typography.
-  - Auto-sized columns and thin cell borders.
-  - Freeze panes on header row.
-  - Date formats (`dd-MM-yyyy`) and Percentage formats (`0.00%`).
-- **Complete Attendance Summary Workbook**:
-  - **Sheet 1**: `Summary` (Institution info, total students, working days, averages, daily counts).
-  - **Sheet 2**: `Student Attendance` (Consolidated performance of all students).
-  - **Sheet 3**: `Daily Attendance` (Date-wise logs).
-  - **Sheet 4**: `Low Attendance` (Intervention list).
-  - **Sheet 5**: `Student List` (Master directory).
-
-### 📄 Real PDF Export (OpenPDF)
-- Clean, print-ready PDF reports with institution header, generated date/time stamps, filter parameters, styled table cells, alternating row colors, and summary totals.
-
-### ⚙️ System & Academic Settings
-- Configurable settings stored in MySQL `settings` table:
-  - Institution Name (Default: `ABC Engineering College`)
-  - Academic Year (Default: `2026-27`)
-  - Current Semester (Default: `V`)
-  - Required Attendance Percentage (Default: `75%`)
-  - Semester Working Days Target (Default: `60`)
-  - Departments, Years, and Sections.
-- One-click **Database Connection Settings** dialog and **Re-seed Demo Data** utility.
+# SMART STUDENT ATTENDANCE MANAGEMENT SYSTEM USING JAVA, JDBC AND MYSQL
+### A Database-Driven Attendance Monitoring and Reporting Application
+**Institution:** KIT ENGINEERING COLLEGE  
+**Academic Year:** 2026-2027  
+**Degree / Program:** Bachelor of Engineering (B.E. / B.Tech) — Computer Science & Engineering  
+**Curriculum Focus:** Academic Credit / Capstone Viva-Voce Evaluation  
 
 ---
 
-## 2. Technology Stack
+## 🏛️ Executive Summary
 
-| Component | Technology | Version |
+The **Smart Student Attendance Management System** is a production-grade, viva-friendly academic software application developed for **KIT ENGINEERING COLLEGE**. Built using **Java 17 LTS**, **Java Swing (FlatLaf Modern UI)**, **JDBC**, **MySQL 8.x**, **Apache POI**, and **OpenPDF**, the system enforces strict relational database normalization (3NF), prepared-statement SQL security, transaction integrity, explainable attendance risk analytics, and formal academic reporting.
+
+In addition to the primary standalone Java Desktop GUI application, the system features a synchronized **Full-Stack Web Portal** (HTML5, Vanilla CSS, Vite, SheetJS, jsPDF) and a comprehensive 670+ line [ACADEMIC_DOCUMENTATION.md](file:///C:/Users/GOVARDHANAN/.gemini/antigravity-ide/scratch/student-attendance-system/ACADEMIC_DOCUMENTATION.md) written specifically for academic project evaluations, viva-voce defense, and external examiners.
+
+---
+
+## 🎯 Key Academic & Architectural Highlights
+
+1. **Clean Multi-Tier MVC Architecture:** Strict separation between Presentation (`ui`), Business Logic (`service`), Data Access Objects (`dao`), Relational Entities (`model`), and Configuration (`config`).
+2. **Normalized Relational Schema (16 Tables in 3NF):** Full relational integrity with foreign keys, composite primary keys, triggers, audit logging, and cascading constraints.
+3. **Robust JDBC Implementation:** 100% Prepared Statements preventing SQL injection; explicit ACID transaction management (`setAutoCommit(false)`, `commit()`, `rollback()`).
+4. **Mathematical Attendance Recovery & Buffer Algorithms:**
+   - **Shortage Recovery:** $x = \max\left(0, \left\lceil \frac{R \cdot T - A}{1 - R} \right\rceil\right)$ (classes needed to reach cutoff $R$).
+   - **Missable Margin:** $m = \max\left(0, \left\lfloor \frac{A - R \cdot T}{R} \right\rfloor\right)$ (classes allowed to miss while remaining $\ge R$).
+5. **Rule-Based Explainable Risk Predictor:** Transparent risk classification (*SAFE*, *AT RISK*, *CRITICAL*) avoiding opaque blackbox AI.
+6. **Official Attendance Certificate Generator:** Print-ready official clearance certificates with tamper-evident digital verification tokens.
+7. **Collegiate Red & White UI:** Premium KIT Engineering College branding (Collegiate Crimson `#8B0000`, Deep Burgundy `#5C0000`, Warm Gold `#D4AF37`, and Crisp Alabaster `#F8FAFC`).
+8. **Academic Holiday Management:** Declare institutional holidays and dynamically exclude them from instructional working day tallies.
+9. **Dual Platform Access:**
+   - Standalone Desktop Fat JAR (`target/StudentAttendanceSystem.jar`)
+   - Companion Responsive Web Portal (`web/dist/` or `http://localhost:3000`)
+
+---
+
+## 🗄️ Relational Database Schema (16 Tables in 3NF)
+
+| # | Table Name | Purpose / Relations |
 |---|---|---|
-| **Language** | Java (JDK) | 17 LTS or later |
-| **GUI Framework** | Java Swing + FlatLaf | FlatLaf 3.5.4 |
-| **Database** | MySQL Server | 8.x |
-| **Database Driver** | MySQL Connector/J | 8.3.0 |
-| **Excel Library** | Apache POI / POI-OOXML | 5.2.5 |
-| **PDF Library** | OpenPDF | 1.3.39 |
-| **Security** | jBCrypt | 0.4 |
-| **Build Tool** | Apache Maven | 3.9+ |
-| **Testing** | JUnit Jupiter | 5.10.2 |
+| 1 | `settings` | System-wide academic configurations (college name, cutoff %, working days). |
+| 2 | `users` | Role-based user credentials (`admin`, `teacher`, `student`) with BCrypt hashes. |
+| 3 | `departments` | Engineering branches (CSE, IT, AI&DS, ECE, EEE, MECH). |
+| 4 | `teachers` | Faculty directory with employee codes, departments, and designations. |
+| 5 | `students` | Master student directory with register numbers, semesters, and contact details. |
+| 6 | `subjects` | Course registry with subject codes, credits, and semester mappings. |
+| 7 | `student_subjects` | Course enrollment mappings linking students to registered subjects. |
+| 8 | `periods` | Daily class time-slots (Period 1 to Period 7 with start/end times). |
+| 9 | `timetable` | Scheduled class allocation linking department, year, section, day, period, subject, and faculty. |
+| 10 | `attendance_session` | Master session record for period-wise or daily class attendance. |
+| 11 | `attendance` | Daily/period-wise attendance entries (`PRESENT`, `ABSENT`, `OD`, `LATE`, `LEAVE`). |
+| 12 | `leave_requests` | Formal leave application workflow (Applied, Approved, Rejected). |
+| 13 | `attendance_audit` | Historical record of manual attendance modifications and corrections. |
+| 14 | `audit_logs` | System-wide operational logs (logins, exports, data updates). |
+| 15 | `notifications` | Role-targeted administrative announcements and alerts. |
+| 16 | `holidays` | Declared public and academic holidays excluded from working day calculations. |
 
 ---
 
-## 3. Preloaded 100 Demo Students & Historical Attendance
+## 👥 Demo Preloaded Data (100 Students & 40 Days History)
 
-The database includes **100 realistic demo students** with diverse Indian names, emails, phones, and addresses distributed across:
-- **Departments**: CSE (20), IT (20), AI&DS (15), ECE (20), EEE (13), MECH (12)
-- **Years of Study**: 1, 2, 3, 4
-- **Sections**: A, B
-- **Attendance History**: **40 working days** (weekdays only, August 3, 2026 to September 25, 2026) with realistic distributions:
-  - ~30 students: **90% – 100%** (High performers)
-  - ~35 students: **80% – 89%** (Good attendance)
-  - ~15 students: **75% – 79%** (Borderline compliant)
-  - ~12 students: **65% – 74%** (Warning - below threshold)
-  - ~8 students: **< 65%** (Critical low attendance)
+The database includes realistic demo data tailored for an instant project presentation:
+- **100 Realistic Students** across 6 departments with Indian names, valid register numbers, and emails.
+- **10+ Faculty Members** across disciplines.
+- **15+ Engineering Subjects** with course codes, credits, and syllabus hours.
+- **40 Instructional Working Days** (August 3, 2026 to September 25, 2026, Monday–Friday only):
+  - ~30 students: **90% – 100%** (High Performers)
+  - ~35 students: **80% – 89%** (Good Standing)
+  - ~15 students: **75% – 79%** (Borderline Compliant)
+  - ~12 students: **65% – 74%** (At Risk / Intervention Required)
+  - ~8 students: **< 65%** (Critical Condonation / Detained)
 
 ---
 
-## 4. Default Login Credentials
+## 🔑 Default Login Credentials
 
-| Role | Username | Password | Access Level |
+| Role | Username | Password | Access Capabilities |
 |---|---|---|---|
-| **Administrator** | `admin` | `admin123` | Full Access (Dashboard, Students, Attendance, Reports, Teachers, Settings) |
-| **Teacher / Faculty** | `teacher` | `teacher123` | Standard Access (Dashboard, Students, Attendance, Reports) |
+| **Administrator** | `admin` | `admin123` | Full control: Analytics, Students, Faculty, Attendance, Holidays, Settings, Reports. |
+| **Faculty / Teacher** | `teacher` | `teacher123` | Daily attendance marking, Student search, Risk reports, Certificate generation. |
+| **Student** | `student` | `student123` | Personal attendance percentage, shortage recovery calculator, leave status. |
+
+*(Quick-fill demo buttons are provided on the login window for 1-click evaluation).*
 
 ---
 
-## 5. Database Setup Instructions
+## 🚀 How to Build and Run
 
-### Option A: Automatic Application Setup (Fastest & Easiest)
-1. Make sure MySQL Server is running locally on port `3306`.
-2. Start the application (see section 6).
-3. On the login screen, click the **`DB Settings`** button at the bottom right.
-4. Verify your MySQL username and password (e.g., `root` / your password).
-5. Click **`Initialize / Seed DB`**. The application will automatically create the database, tables, default settings, demo users, 100 students, faculty, and 40 days of historical attendance!
+### Prerequisites
+- **Java Development Kit (JDK):** Version 17 LTS or higher (`java -version`)
+- **Apache Maven:** Version 3.8+ (`mvn -version`)
+- **MySQL Server:** Version 8.0+ running on port `3306`
 
-### Option B: Manual Setup via MySQL Command Line or Workbench
-Open MySQL Workbench or your terminal and execute:
-
-```bash
-# 1. Login to MySQL
-mysql -u root -p
-
-# 2. Execute setup.sql
-source database/setup.sql;
-```
-
-Or run via shell:
-```bash
-mysql -u root -p < database/setup.sql
-```
-
-The script `database/setup.sql` will:
-1. Create `student_attendance_db` with `utf8mb4` character set.
-2. Create tables: `settings`, `users`, `departments`, `teachers`, `students`, `attendance`.
-3. Add unique indexes and constraints (`student_id, attendance_date`).
-4. Insert default academic settings.
-5. Insert `admin` and `teacher` accounts with BCrypt hashes.
-6. Insert 6 departments and 6 demo faculty members.
-7. Insert 100 demo students with realistic particulars.
-8. Insert 4,000 attendance records across 40 working days.
-
----
-
-## 6. Configuration
-
-### Connection Properties
-Configuration is located in `src/main/resources/application.properties`:
-```properties
-db.host=localhost
-db.port=3306
-db.name=student_attendance_db
-db.username=root
-db.password=root
-db.params=useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
-
-app.name=Student Attendance Management System
-app.version=1.0.0
-app.default.college=ABC Engineering College
-app.default.academic_year=2026-27
-app.default.semester=V
-app.default.required_attendance=75
-app.default.working_days=60
-```
-
-> **Note:** If you change database credentials using the in-app **DB Settings** dialog, they are automatically persisted to `db.properties` in the application directory without modifying internal resources.
-
----
-
-## 7. How to Build and Run
-
-### Run on Windows using `run.bat`
-Simply double-click `run.bat` or run:
+### Option 1: Quick Run on Windows (One-Click)
+Double-click `run.bat` or open PowerShell / Command Prompt and run:
 ```cmd
 run.bat
 ```
 
-### Build Executable JAR with Maven
+### Option 2: Build & Run Standalone Fat JAR
 ```bash
+# Package into executable fat JAR with all dependencies
 mvn clean package -DskipTests
-```
-This produces the standalone fat JAR at `target/StudentAttendanceSystem.jar`.
 
-### Run the Standalone JAR
-```bash
+# Execute the standalone JAR
 java -jar target/StudentAttendanceSystem.jar
 ```
 
-### Run with Maven Exec Plugin
+### Option 3: Run via Maven Exec Plugin
 ```bash
 mvn compile exec:java
 ```
 
-### Run in IDE (IntelliJ IDEA / Eclipse / NetBeans)
-1. Open the IDE and select **Open / Import Project**.
-2. Select the directory `student-attendance-system` as a **Maven project**.
-3. Allow the IDE to import `pom.xml`.
-4. Locate and run `src/main/java/com/attendance/Main.java`.
+### Option 4: Companion Web Portal
+```bash
+cd web
+npm install
+npm run dev
+# Open http://localhost:3000 in your browser
+```
 
 ---
 
-## 8. Automated Testing
+## 📊 Analytics & Academic Innovation Modules
 
-Run the automated test suite with Maven:
+### 1. Interactive Analytics & Risk Prediction Panel
+Navigate to **📈 Analytics & Risk** in the sidebar:
+- **Department Attendance Comparison Bar Chart:** Dynamic Swing 2D vector bars showing average attendance per department with 75% cutoff line.
+- **Tier Distribution:** Real-time headcount across 5 performance bands (90–100%, 80–89%, 75–79%, 65–74%, <65%).
+- **Subject-wise Performance:** Tabular breakdown of subject attendance averages.
+- **Explainable Risk Predictor:** Table classifying students into *SAFE* (green), *AT RISK* (amber), or *CRITICAL* (red) based on deterministic thresholds.
+- **Live Shortage & Buffer Calculator:** Select any student to instantly compute:
+  - Required consecutive classes ($x$) to achieve 75% / 85%.
+  - Permissible future absences ($m$) without dropping below cutoff.
+
+### 2. Official Attendance Certificate Generator
+Available in **Reports Panel** (`📜 Generate Certificate`) and **Student Profile Dialog**:
+- Produces a formal, print-ready PDF certificate on KIT Engineering College letterhead.
+- Lists student particulars, semester, working days, attendance percentage, and eligibility standing.
+- Embeds verification hash and authorization signatures for university exam entry.
+
+### 3. Holiday Management
+Available under **Settings Panel** (`📅 Manage Holidays`):
+- Declare and view public, institutional, and examination holidays.
+- Integrated into `DateUtil` and `AttendanceService` to automatically omit holidays from working days.
+
+---
+
+## 📑 Viva-Voce Technical Preparation Guide
+
+A dedicated, comprehensive academic report is available in [ACADEMIC_DOCUMENTATION.md](file:///C:/Users/GOVARDHANAN/.gemini/antigravity-ide/scratch/student-attendance-system/ACADEMIC_DOCUMENTATION.md). Key topics covered for external examiners:
+
+1. **Why JDBC over ORM (Hibernate)?**  
+   *Direct SQL control, zero caching opacity, minimal memory footprint, and explicit transaction safety needed for academic clarity.*
+2. **How is SQL Injection prevented?**  
+   *Pre-compiled `PreparedStatement` with parameterized placeholders (`?`), treating input strictly as literals rather than executable SQL.*
+3. **How is Duplicate Attendance prevented?**  
+   *Enforced at both the DB tier via `UNIQUE KEY (student_id, attendance_date)` and the UI tier via duplicate-checking confirmation dialogs.*
+4. **How does the Shortage Recovery Formula work?**  
+   *Derived from $\frac{A + x}{T + x} \ge R \implies x \ge \frac{R \cdot T - A}{1 - R}$. Since already missed classes cannot be undone, each recovery class adds $+1$ to both numerator and denominator.*
+5. **How is Password Security managed?**  
+   *Salted BCrypt hashing with standard work factor 10, preventing rainbow-table attacks.*
+
+---
+
+## 🧪 Automated Testing
+
+Run the test suite via Maven:
 ```bash
 mvn test
 ```
-The test suite validates:
-- BCrypt password hashing and verification for `admin123` and `teacher123`.
-- Input validation routines (names, emails, phones, years, statuses).
-- Date utilities and working days calculation (ensuring 0 weekend days).
-- Attendance percentages and tier thresholds (Excellent, Good, Warning, Critical).
-- 100 Demo student definitions (uniqueness of names and register numbers).
-- Real Apache POI Excel export (creates and reads back `.xlsx` worksheets).
-- Real OpenPDF export (creates valid PDF documents with `%PDF-` header).
+**Test Coverage Includes:**
+- BCrypt cryptographic hash verification.
+- Relational input validators (email, phone, register numbers).
+- Working day calculation excluding weekends and declared holidays.
+- Attendance percentage and tier classification algorithms.
+- Shortage recovery formula edge cases (100% attendance, 0% attendance, already compliant).
+- Real Apache POI `.xlsx` generation and validation.
+- Real OpenPDF document creation with valid `%PDF-` header.
 
 ---
 
-## 9. Project Structure
+## 📂 Project Structure
 
 ```text
 student-attendance-system/
 │
-├── pom.xml                               # Maven project descriptor & dependencies
-├── README.md                             # Complete project documentation
-├── run.bat                               # Windows launcher script
+├── pom.xml                               # Maven project configuration & dependencies
+├── README.md                             # Comprehensive project manual & setup
+├── ACADEMIC_DOCUMENTATION.md             # Complete college submission documentation & viva guide
+├── run.bat                               # Windows one-click executable launcher
 │
 ├── database/
-│   ├── schema.sql                        # DDL table creation and index definitions
-│   ├── demo_data.sql                     # 100 students, users, faculty & attendance seed
-│   └── setup.sql                         # Complete unified setup script
+│   ├── schema.sql                        # 16 Relational tables (DDL, constraints, triggers)
+│   ├── demo_data.sql                     # Seed data: 100 students, 10 faculty, 40 days logs
+│   ├── migration.sql                     # Schema migration script for upgrades
+│   └── setup.sql                         # Complete unified MySQL initialization script
+│
+├── web/                                  # Full-Stack Web Portal Companion
+│   ├── index.html                        # Modern responsive web interface
+│   ├── package.json                      # Web portal dependencies (Vite, SheetJS, jsPDF)
+│   ├── src/                              # Vanilla JS modular components
+│   └── dist/                             # Pre-built production bundle
 │
 └── src/
     ├── main/
-    │   ├── java/
-    │   │   └── com/attendance/
-    │   │       ├── Main.java             # Desktop application launcher & L&F setup
-    │   │       │
-    │   │       ├── config/
-    │   │       │   └── DatabaseConnection.java   # JDBC connection pooling & telemetry
-    │   │       │
-    │   │       ├── model/
-    │   │       │   ├── User.java                 # User account entity
-    │   │       │   ├── Student.java              # Student record entity
-    │   │       │   ├── Teacher.java              # Faculty entity
-    │   │       │   ├── Department.java           # Department entity
-    │   │       │   ├── Attendance.java           # Daily attendance entry
-    │   │       │   ├── AppSettings.java          # Persistent settings model
-    │   │       │   ├── DashboardStats.java       # Executive analytics model
-    │   │       │   └── StudentAttendanceSummary.java # Calculated attendance metrics
-    │   │       │
-    │   │       ├── dao/
-    │   │       │   ├── UserDAO.java              # Users table CRUD & authentication
-    │   │       │   ├── StudentDAO.java           # Student SQL queries & filters
-    │   │       │   ├── TeacherDAO.java           # Teacher SQL queries
-    │   │       │   ├── DepartmentDAO.java        # Department SQL operations
-    │   │       │   ├── AttendanceDAO.java        # Attendance marking & calculations
-    │   │       │   └── SettingsDAO.java          # Settings table persistence
-    │   │       │
-    │   │       ├── service/
-    │   │       │   ├── AuthenticationService.java# Session & credential validation
-    │   │       │   ├── StudentService.java       # Student business validations
-    │   │       │   ├── TeacherService.java       # Faculty management logic
-    │   │       │   ├── AttendanceService.java    # Marking rules & calculations
-    │   │       │   ├── ReportService.java        # Aggregated reporting queries
-    │   │       │   ├── SettingsService.java      # Settings validation & storage
-    │   │       │   ├── DatabaseInitService.java  # Auto-schema creator & seeder
-    │   │       │   ├── ExcelExportService.java   # Apache POI multi-sheet generator
-    │   │       │   └── PdfExportService.java     # OpenPDF formatted reports
-    │   │       │
-    │   │       ├── ui/
-    │   │       │   ├── LoginFrame.java           # Modern login window
-    │   │       │   ├── DashboardFrame.java       # Main frame with sidebar navigation
-    │   │       │   ├── DashboardPanel.java       # KPI cards, bar chart, low-att alert
-    │   │       │   ├── StudentPanel.java         # Student search, filters, CRUD table
-    │   │       │   ├── StudentFormDialog.java    # Add/Edit student modal dialog
-    │   │       │   ├── StudentProfileDialog.java # Individual profile & attendance stats
-    │   │       │   ├── AttendancePanel.java      # Daily class attendance marking
-    │   │       │   ├── ReportsPanel.java         # 6 report types, Excel & PDF exports
-    │   │       │   ├── TeacherPanel.java         # Faculty management panel
-    │   │       │   ├── TeacherFormDialog.java    # Add/Edit teacher modal dialog
-    │   │       │   ├── SettingsPanel.java        # Academic configuration panel
-    │   │       │   ├── DatabaseConfigDialog.java # MySQL connection settings modal
-    │   │       │   ├── ChangePasswordDialog.java # User password modification modal
-    │   │       │   │
-    │   │       │   └── components/
-    │   │       │       ├── ModernButton.java     # Custom styled rounded buttons
-    │   │       │       ├── ModernTable.java      # Styled JTable with status badges
-    │   │       │       ├── StatCard.java         # KPI dashboard card component
-    │   │       │       └── SimpleBarChart.java   # Vector department comparison chart
-    │   │       │
-    │   │       └── util/
-    │   │           ├── DateUtil.java             # Date formatting & working days
-    │   │           ├── ValidationUtil.java       # Field & regex validators
-    │   │           ├── PasswordUtil.java         # BCrypt hashing & checking
-    │   │           └── SqlScriptGenerator.java   # SQL schema & demo data exporter
-    │   │
+    │   ├── java/com/attendance/
+    │   │   ├── Main.java                 # Desktop application entry point & FlatLaf initialization
+    │   │   ├── config/
+    │   │   │   └── DatabaseConnection.java# JDBC connection management & pooling
+    │   │   ├── model/                    # Relational data entities (Student, Attendance, Holiday, etc.)
+    │   │   ├── dao/                      # Data Access Objects with parameterized SQL
+    │   │   │   ├── AttendanceDAO.java    # Marking, calculations, distributions, trends
+    │   │   │   ├── StudentDAO.java       # Student queries, filters, CRUD
+    │   │   │   ├── HolidayDAO.java       # Holiday persistence & working day exclusion
+    │   │   │   └── ...
+    │   │   ├── service/                  # Business logic & algorithms
+    │   │   │   ├── AttendanceService.java# Batch marking & percentage logic
+    │   │   │   ├── AttendanceCalculatorService.java # Shortage & buffer math formulas
+    │   │   │   ├── ExcelExportService.java   # Apache POI multi-sheet export
+    │   │   │   ├── PdfExportService.java     # OpenPDF reports & Attendance Certificates
+    │   │   │   └── ...
+    │   │   └── ui/                       # Modern Swing GUI (FlatLaf, KIT Red/Gold theme)
+    │   │       ├── DashboardFrame.java   # Executive dashboard with role-based sidebar
+    │   │       ├── AnalyticsPanel.java   # Charts, risk table, shortage calculator
+    │   │       ├── AttendancePanel.java  # Daily attendance marking interface
+    │   │       ├── ReportsPanel.java     # 6 Report types + Certificate generator
+    │   │       ├── HolidayDialog.java    # Academic holiday management
+    │   │       └── ...
     │   └── resources/
-    │       └── application.properties            # Default connection parameters
-    │
+    │       └── application.properties    # Database configuration & defaults
     └── test/
-        └── java/
-            └── com/attendance/
-                └── SystemUnitTest.java           # Automated test suite
+        └── java/com/attendance/
+            └── SystemUnitTest.java       # Unit & integration test suite
 ```
 
 ---
 
-## 10. Verification & Quality Checklist
+## 🏆 Academic Evaluation Readiness
 
-- [x] Java 17 compatibility verified.
-- [x] Java Swing with FlatLaf modern UI implemented.
-- [x] JDBC MySQL 8.x connectivity with prepared statements.
-- [x] Complete MVC architecture with DAO, Service, Model, and UI layers.
-- [x] Login system with BCrypt hashing (`admin` / `admin123`, `teacher` / `teacher123`).
-- [x] Interactive Dashboard with 6 dynamic KPI cards and department comparison chart.
-- [x] Student Management with search, filters, CRUD, and profile viewer.
-- [x] Teacher Management module.
-- [x] Daily class attendance marking with duplicate prevention (`UNIQUE(student_id, attendance_date)`).
-- [x] Dynamic attendance percentage calculation: `(Present / Total Working Days) * 100`.
-- [x] Low attendance alerts section with export options.
-- [x] 6 Report types (Daily, Student, Monthly, Date Range, Department, Low Attendance).
-- [x] Apache POI `.xlsx` Excel export with multi-sheet summary workbook.
-- [x] OpenPDF report generation with institutional headers and timestamps.
-- [x] Configurable academic settings saved in MySQL.
-- [x] 100 Demo students with realistic Indian names across CSE, IT, AI&DS, ECE, EEE, MECH.
-- [x] 40 Days of historical attendance with realistic distribution (no weekends).
-- [x] Executable fat JAR built at `target/StudentAttendanceSystem.jar`.
-- [x] All 7 automated unit and integration tests passing (`mvn test`).
+- **Working Functionality:** 100% verified with live database interactions.
+- **Architecture:** Standard Java MVC design pattern.
+- **Viva Voce:** Complete Q&A, mathematical formulas, and DFDs documented in [ACADEMIC_DOCUMENTATION.md](file:///C:/Users/GOVARDHANAN/.gemini/antigravity-ide/scratch/student-attendance-system/ACADEMIC_DOCUMENTATION.md).
+- **Code Repository:** Pushed to GitHub: `https://github.com/gokuldhasgovardhanan-crypto/STUDENT-MANAGEMENT-PORTAL.git`.
