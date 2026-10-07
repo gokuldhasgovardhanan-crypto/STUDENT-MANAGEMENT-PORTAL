@@ -33,7 +33,12 @@ class Store {
   }
 
   getSettings() {
-    return JSON.parse(localStorage.getItem("sams_settings")) || DEFAULT_SETTINGS;
+    let s = JSON.parse(localStorage.getItem("sams_settings"));
+    if (!s || s.collegeName === "ABC Engineering College") {
+      s = { ...(s || DEFAULT_SETTINGS), collegeName: "KIT ENGINEERING COLLEGE" };
+      this.saveSettings(s);
+    }
+    return s;
   }
   saveSettings(s) {
     localStorage.setItem("sams_settings", JSON.stringify(s));
@@ -187,8 +192,9 @@ function render() {
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-title">Student Attendance</div>
-          <div class="sidebar-subtitle">Management System</div>
+          <div class="sidebar-brand-badge">🏛️ KIT COLLEGE</div>
+          <div class="sidebar-title">KIT College</div>
+          <div class="sidebar-subtitle">Student Attendance Portal</div>
         </div>
         <div class="nav-section-title">Navigation</div>
         <ul class="nav-list">
@@ -228,7 +234,7 @@ function render() {
         <div class="sidebar-footer">
           <ul class="nav-list">
             <li class="nav-item">
-              <button onclick="logout()">🚪 Logout</button>
+              <button onclick="logout()">🚪 Sign Out</button>
             </li>
           </ul>
         </div>
@@ -239,14 +245,18 @@ function render() {
         <!-- Topbar -->
         <header class="topbar">
           <div class="topbar-left">
-            <span style="font-weight: 700; font-size: 0.95rem;">Student Attendance System</span>
+            <span class="portal-brand-title">KIT Attendance Management</span>
             <span class="college-badge">🏛️ ${settings.collegeName}</span>
           </div>
           <div class="topbar-right">
             <div class="user-profile">
-              <span>👤 ${currentUser.name}</span>
-              <span class="role-tag">${currentUser.role}</span>
+              <div class="user-avatar-badge">${currentUser.name.charAt(0)}</div>
+              <div>
+                <span style="display: block; font-weight: 700; line-height: 1.2;">${currentUser.name}</span>
+                <span class="role-tag">${currentUser.role}</span>
+              </div>
             </div>
+            <button class="btn btn-secondary" style="padding: 5px 12px; font-size: 0.78rem;" onclick="logout()">🚪 Exit</button>
           </div>
         </header>
 
@@ -277,27 +287,34 @@ window.logout = function() {
 };
 
 function renderLoginView() {
+  const settings = store.getSettings();
   app.innerHTML = `
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
-          <h2>Student Attendance</h2>
-          <p>Management System</p>
+          <div class="login-emblem">🏛️</div>
+          <h2>${settings.collegeName}</h2>
+          <p>Student Attendance Management Portal</p>
         </div>
         <form id="login-form" onsubmit="handleLogin(event)">
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label>Username</label>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Username / ID</label>
             <input type="text" id="login-user" class="form-control" value="admin" required />
           </div>
-          <div class="form-group" style="margin-bottom: 14px;">
-            <label>Password</label>
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label>Secure Password</label>
             <input type="password" id="login-pass" class="form-control" value="admin123" required />
           </div>
-          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-            <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; flex: 1;" onclick="setDemo('admin', 'admin123')">Quick Admin</button>
-            <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; flex: 1;" onclick="setDemo('teacher', 'teacher123')">Quick Teacher</button>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 0.92rem; margin-bottom: 14px;">
+            Sign In to Portal
+          </button>
+          <div class="login-quick-demo">
+            <span>⚡ Quick Demo Switch</span>
+            <div class="login-demo-btns">
+              <button type="button" class="btn btn-secondary" onclick="setDemo('admin', 'admin123')">Admin Mode</button>
+              <button type="button" class="btn btn-secondary" onclick="setDemo('teacher', 'teacher123')">Faculty Mode</button>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px;">Sign In</button>
         </form>
       </div>
     </div>
@@ -364,33 +381,51 @@ function renderDashboard() {
 
     <!-- 6 KPI Stat Cards -->
     <div class="stats-grid">
-      <div class="stat-card" style="--stat-color: #3b82f6;">
-        <div class="stat-title">Total Students</div>
+      <div class="stat-card" style="--stat-color: #991b1b;">
+        <div class="stat-header">
+          <span class="stat-title">Total Students</span>
+          <span class="stat-icon">🎓</span>
+        </div>
         <div class="stat-value">${stats.totalStudents}</div>
         <div class="stat-sub">Enrolled active students</div>
       </div>
-      <div class="stat-card" style="--stat-color: #16a34a;">
-        <div class="stat-title">Present Today</div>
+      <div class="stat-card" style="--stat-color: #15803d;">
+        <div class="stat-header">
+          <span class="stat-title">Present Today</span>
+          <span class="stat-icon">✅</span>
+        </div>
         <div class="stat-value">${stats.presentToday}</div>
         <div class="stat-sub">Marked present today</div>
       </div>
       <div class="stat-card" style="--stat-color: #dc2626;">
-        <div class="stat-title">Absent Today</div>
+        <div class="stat-header">
+          <span class="stat-title">Absent Today</span>
+          <span class="stat-icon">❌</span>
+        </div>
         <div class="stat-value">${stats.absentToday}</div>
         <div class="stat-sub">Marked absent today</div>
       </div>
-      <div class="stat-card" style="--stat-color: #f59e0b;">
-        <div class="stat-title">Not Marked Today</div>
+      <div class="stat-card" style="--stat-color: #d97706;">
+        <div class="stat-header">
+          <span class="stat-title">Not Marked</span>
+          <span class="stat-icon">⏳</span>
+        </div>
         <div class="stat-value">${stats.notMarkedToday}</div>
         <div class="stat-sub">Pending attendance</div>
       </div>
-      <div class="stat-card" style="--stat-color: #6366f1;">
-        <div class="stat-title">Average Attendance</div>
+      <div class="stat-card" style="--stat-color: #b91c1c;">
+        <div class="stat-header">
+          <span class="stat-title">Average Attendance</span>
+          <span class="stat-icon">📈</span>
+        </div>
         <div class="stat-value">${stats.averageAttendance}%</div>
         <div class="stat-sub">Overall semester rate</div>
       </div>
-      <div class="stat-card" style="--stat-color: #e11d48;">
-        <div class="stat-title">Students Below ${stats.requiredPct}%</div>
+      <div class="stat-card" style="--stat-color: #7f1d1d;">
+        <div class="stat-header">
+          <span class="stat-title">Defaulters (&lt;${stats.requiredPct}%)</span>
+          <span class="stat-icon">⚠️</span>
+        </div>
         <div class="stat-value">${stats.studentsBelowCount}</div>
         <div class="stat-sub">Action required</div>
       </div>

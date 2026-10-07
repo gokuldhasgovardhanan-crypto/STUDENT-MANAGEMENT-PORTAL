@@ -3,7 +3,7 @@
 // ===================================================================
 
 export const DEFAULT_SETTINGS = {
-  collegeName: "ABC Engineering College",
+  collegeName: "KIT ENGINEERING COLLEGE",
   academicYear: "2026-27",
   semester: "V",
   requiredAttendancePct: 75,
@@ -14,12 +14,12 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const DEFAULT_TEACHERS = [
-  { id: 1, empId: "EMP101", name: "Dr. R. Ramanathan", dept: "CSE", email: "ramanathan.r@abc.edu.in", phone: "9840123451" },
-  { id: 2, empId: "EMP102", name: "Dr. S. Gayathri", dept: "IT", email: "gayathri.s@abc.edu.in", phone: "9840123452" },
-  { id: 3, empId: "EMP103", name: "Prof. K. Venkatesh", dept: "AI&DS", email: "venkatesh.k@abc.edu.in", phone: "9840123453" },
-  { id: 4, empId: "EMP104", name: "Dr. P. Meenakshi", dept: "ECE", email: "meenakshi.p@abc.edu.in", phone: "9840123454" },
-  { id: 5, empId: "EMP105", name: "Prof. M. Suresh", dept: "EEE", email: "suresh.m@abc.edu.in", phone: "9840123455" },
-  { id: 6, empId: "EMP106", name: "Dr. T. Revathi", dept: "MECH", email: "revathi.t@abc.edu.in", phone: "9840123456" }
+  { id: 1, empId: "EMP101", name: "Dr. R. Ramanathan", dept: "CSE", email: "ramanathan.r@kit.edu.in", phone: "9840123451" },
+  { id: 2, empId: "EMP102", name: "Dr. S. Gayathri", dept: "IT", email: "gayathri.s@kit.edu.in", phone: "9840123452" },
+  { id: 3, empId: "EMP103", name: "Prof. K. Venkatesh", dept: "AI&DS", email: "venkatesh.k@kit.edu.in", phone: "9840123453" },
+  { id: 4, empId: "EMP104", name: "Dr. P. Meenakshi", dept: "ECE", email: "meenakshi.p@kit.edu.in", phone: "9840123454" },
+  { id: 5, empId: "EMP105", name: "Prof. M. Suresh", dept: "EEE", email: "suresh.m@kit.edu.in", phone: "9840123455" },
+  { id: 6, empId: "EMP106", name: "Dr. T. Revathi", dept: "MECH", email: "revathi.t@kit.edu.in", phone: "9840123456" }
 ];
 
 export function generateInitialStudents() {
@@ -77,7 +77,7 @@ export function generateInitialStudents() {
       const year = 1 + ((j - 1) % 4);
       const section = ((j - 1) % 2 === 0) ? "A" : "B";
       const regNo = `24${prefix}${String(j).padStart(3, "0")}`;
-      const email = `${first.toLowerCase()}.${last.toLowerCase()}@abc.edu.in`;
+      const email = `${first.toLowerCase()}.${last.toLowerCase()}@kit.edu.in`;
       const phone = `98${String(40 + (idx % 50)).padStart(2, "0")}${String(100000 + idx * 73).substring(0, 6)}`;
       const city = cities[idx % cities.length];
 

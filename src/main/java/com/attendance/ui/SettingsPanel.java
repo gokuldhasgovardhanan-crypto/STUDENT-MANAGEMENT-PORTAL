@@ -167,7 +167,7 @@ public class SettingsPanel extends JPanel {
     }
 
     private void restoreDefaults() {
-        txtCollegeName.setText("ABC Engineering College");
+        txtCollegeName.setText("KIT ENGINEERING COLLEGE");
         txtAcademicYear.setText("2026-27");
         txtSemester.setText("V");
         txtRequiredPct.setText("75.0");

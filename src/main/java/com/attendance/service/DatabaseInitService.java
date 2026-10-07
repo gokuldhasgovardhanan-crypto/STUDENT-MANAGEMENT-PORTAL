@@ -217,7 +217,7 @@ public class DatabaseInitService {
         String sql = "INSERT INTO settings (setting_key, setting_value, description) VALUES (?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             Object[][] defaultSettings = {
-                    {"college_name", "ABC Engineering College", "Configured Institution Name"},
+                    {"college_name", "KIT ENGINEERING COLLEGE", "Configured Institution Name"},
                     {"academic_year", "2026-27", "Current Academic Year"},
                     {"semester", "V", "Current Active Semester"},
                     {"required_attendance_pct", "75.0", "Mandatory attendance requirement"},
@@ -246,7 +246,7 @@ public class DatabaseInitService {
             ps.setString(2, adminHash);
             ps.setString(3, "System Administrator");
             ps.setString(4, "ADMIN");
-            ps.setString(5, "admin@abc.edu.in");
+            ps.setString(5, "admin@kit.edu.in");
             ps.addBatch();
 
             // Teacher: teacher / teacher123
@@ -255,7 +255,7 @@ public class DatabaseInitService {
             ps.setString(2, teacherHash);
             ps.setString(3, "Prof. Rajesh Sharma");
             ps.setString(4, "TEACHER");
-            ps.setString(5, "teacher@abc.edu.in");
+            ps.setString(5, "teacher@kit.edu.in");
             ps.addBatch();
 
             ps.executeBatch();
@@ -288,12 +288,12 @@ public class DatabaseInitService {
         String sql = "INSERT INTO teachers (employee_id, teacher_name, department, email, phone) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             String[][] teachers = {
-                    {"EMP101", "Dr. R. Ramanathan", "CSE", "ramanathan.r@abc.edu.in", "9840123451"},
-                    {"EMP102", "Dr. S. Gayathri", "IT", "gayathri.s@abc.edu.in", "9840123452"},
-                    {"EMP103", "Prof. K. Venkatesh", "AI&DS", "venkatesh.k@abc.edu.in", "9840123453"},
-                    {"EMP104", "Dr. P. Meenakshi", "ECE", "meenakshi.p@abc.edu.in", "9840123454"},
-                    {"EMP105", "Prof. M. Suresh", "EEE", "suresh.m@abc.edu.in", "9840123455"},
-                    {"EMP106", "Dr. T. Revathi", "MECH", "revathi.t@abc.edu.in", "9840123456"}
+                    {"EMP101", "Dr. R. Ramanathan", "CSE", "ramanathan.r@kit.edu.in", "9840123451"},
+                    {"EMP102", "Dr. S. Gayathri", "IT", "gayathri.s@kit.edu.in", "9840123452"},
+                    {"EMP103", "Prof. K. Venkatesh", "AI&DS", "venkatesh.k@kit.edu.in", "9840123453"},
+                    {"EMP104", "Dr. P. Meenakshi", "ECE", "meenakshi.p@kit.edu.in", "9840123454"},
+                    {"EMP105", "Prof. M. Suresh", "EEE", "suresh.m@kit.edu.in", "9840123455"},
+                    {"EMP106", "Dr. T. Revathi", "MECH", "revathi.t@kit.edu.in", "9840123456"}
             };
             for (String[] t : teachers) {
                 ps.setString(1, t[0]);
@@ -506,7 +506,7 @@ public class DatabaseInitService {
                 s.admissionDate = LocalDate.of(2023 + (year == 4 ? 0 : (4 - year)), 8, 1);
 
                 String cleanName = first.toLowerCase() + "." + last.toLowerCase();
-                s.email = cleanName + "@abc.edu.in";
+                s.email = cleanName + "@kit.edu.in";
                 s.phone = String.format("98%02d%06d", 40 + (idx % 50), 100000 + idx * 73);
                 String city = cities[idx % cities.length];
                 s.address = (12 + idx) + ", Gandhi Street, " + city + ", Tamil Nadu - 6000" + (10 + (idx % 50));

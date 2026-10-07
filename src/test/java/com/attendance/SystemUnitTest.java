@@ -51,7 +51,7 @@ public class SystemUnitTest {
         assertFalse(ValidationUtil.isValidName(""));
 
         // Email validation
-        assertTrue(ValidationUtil.isValidEmail("admin@abc.edu.in"));
+        assertTrue(ValidationUtil.isValidEmail("admin@kit.edu.in"));
         assertTrue(ValidationUtil.isValidEmail("student.24cse001@example.com"));
         assertFalse(ValidationUtil.isValidEmail("invalid-email"));
         assertFalse(ValidationUtil.isValidEmail(""));
@@ -211,7 +211,7 @@ public class SystemUnitTest {
         records.add(a1);
 
         File dailyPdf = tempDir.resolve("Daily_Attendance_Report.pdf").toFile();
-        pdfService.exportDailyAttendancePdf("ABC Engineering College", LocalDate.of(2026, 10, 7), "CSE", 2, "A", records, dailyPdf);
+        pdfService.exportDailyAttendancePdf("KIT ENGINEERING COLLEGE", LocalDate.of(2026, 10, 7), "CSE", 2, "A", records, dailyPdf);
 
         assertTrue(dailyPdf.exists());
         assertTrue(dailyPdf.length() > 500);
@@ -222,12 +222,12 @@ public class SystemUnitTest {
 
         // 2. Export Student Profile PDF
         Student s = new Student(1, "24CSE001", "Aarav Kumar", "Male", LocalDate.of(2005, 5, 10),
-                "CSE", 2, "A", "aarav@abc.edu.in", "9840123456", "Chennai", LocalDate.of(2024, 8, 1));
+                "CSE", 2, "A", "aarav@kit.edu.in", "9840123456", "Chennai", LocalDate.of(2024, 8, 1));
         StudentAttendanceSummary sum = new StudentAttendanceSummary(1, "24CSE001", "Aarav Kumar",
                 "CSE", 2, "A", 40, 36, 4, 90.0, "Excellent");
 
         File profilePdf = tempDir.resolve("Student_Profile.pdf").toFile();
-        pdfService.exportStudentProfilePdf("ABC Engineering College", s, sum, records, profilePdf);
+        pdfService.exportStudentProfilePdf("KIT ENGINEERING COLLEGE", s, sum, records, profilePdf);
         assertTrue(profilePdf.exists());
         assertTrue(profilePdf.length() > 500);
     }

@@ -8,7 +8,7 @@ import java.util.List;
  * Model representing persistent application and academic configuration settings.
  */
 public class AppSettings {
-    private String collegeName = "ABC Engineering College";
+    private String collegeName = "KIT ENGINEERING COLLEGE";
     private String academicYear = "2026-27";
     private String semester = "V";
     private double requiredAttendancePct = 75.0;

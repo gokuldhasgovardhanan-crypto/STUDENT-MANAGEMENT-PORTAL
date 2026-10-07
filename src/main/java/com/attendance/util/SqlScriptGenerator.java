@@ -39,7 +39,7 @@ public class SqlScriptGenerator {
             // 1. Settings
             pw.println("-- 1. Default Settings");
             pw.println("INSERT INTO settings (setting_key, setting_value, description) VALUES");
-            pw.println("('college_name', 'ABC Engineering College', 'Configured Institution Name'),");
+            pw.println("('college_name', 'KIT ENGINEERING COLLEGE', 'Configured Institution Name'),");
             pw.println("('academic_year', '2026-27', 'Current Academic Year'),");
             pw.println("('semester', 'V', 'Current Active Semester'),");
             pw.println("('required_attendance_pct', '75.0', 'Mandatory attendance requirement'),");
@@ -55,8 +55,8 @@ public class SqlScriptGenerator {
             String teacherHash = PasswordUtil.hashPassword("teacher123");
             pw.println("-- 2. Default Users");
             pw.println("INSERT INTO users (username, password_hash, full_name, role, email) VALUES");
-            pw.printf("('admin', '%s', 'System Administrator', 'ADMIN', 'admin@abc.edu.in'),%n", adminHash);
-            pw.printf("('teacher', '%s', 'Prof. Rajesh Sharma', 'TEACHER', 'teacher@abc.edu.in')%n", teacherHash);
+            pw.printf("('admin', '%s', 'System Administrator', 'ADMIN', 'admin@kit.edu.in'),%n", adminHash);
+            pw.printf("('teacher', '%s', 'Prof. Rajesh Sharma', 'TEACHER', 'teacher@kit.edu.in')%n", teacherHash);
             pw.println("ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);");
             pw.println();
 
@@ -75,12 +75,12 @@ public class SqlScriptGenerator {
             // 4. Teachers
             pw.println("-- 4. Teachers / Faculty");
             pw.println("INSERT INTO teachers (employee_id, teacher_name, department, email, phone) VALUES");
-            pw.println("('EMP101', 'Dr. R. Ramanathan', 'CSE', 'ramanathan.r@abc.edu.in', '9840123451'),");
-            pw.println("('EMP102', 'Dr. S. Gayathri', 'IT', 'gayathri.s@abc.edu.in', '9840123452'),");
-            pw.println("('EMP103', 'Prof. K. Venkatesh', 'AI&DS', 'venkatesh.k@abc.edu.in', '9840123453'),");
-            pw.println("('EMP104', 'Dr. P. Meenakshi', 'ECE', 'meenakshi.p@abc.edu.in', '9840123454'),");
-            pw.println("('EMP105', 'Prof. M. Suresh', 'EEE', 'suresh.m@abc.edu.in', '9840123455'),");
-            pw.println("('EMP106', 'Dr. T. Revathi', 'MECH', 'revathi.t@abc.edu.in', '9840123456')");
+            pw.println("('EMP101', 'Dr. R. Ramanathan', 'CSE', 'ramanathan.r@kit.edu.in', '9840123451'),");
+            pw.println("('EMP102', 'Dr. S. Gayathri', 'IT', 'gayathri.s@kit.edu.in', '9840123452'),");
+            pw.println("('EMP103', 'Prof. K. Venkatesh', 'AI&DS', 'venkatesh.k@kit.edu.in', '9840123453'),");
+            pw.println("('EMP104', 'Dr. P. Meenakshi', 'ECE', 'meenakshi.p@kit.edu.in', '9840123454'),");
+            pw.println("('EMP105', 'Prof. M. Suresh', 'EEE', 'suresh.m@kit.edu.in', '9840123455'),");
+            pw.println("('EMP106', 'Dr. T. Revathi', 'MECH', 'revathi.t@kit.edu.in', '9840123456')");
             pw.println("ON DUPLICATE KEY UPDATE teacher_name = VALUES(teacher_name);");
             pw.println();
 
