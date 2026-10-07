@@ -1,0 +1,23 @@
+# Target and build directories
+target/
+*.class
+*.jar
+!target/StudentAttendanceSystem.jar
+
+# Local configurations and logs
+db.properties
+*.log
+.DS_Store
+
+# IDE and Editor files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Web / Node
+node_modules/
+dist/
+.vercel/
